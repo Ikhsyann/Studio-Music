@@ -3,16 +3,17 @@
 require_once __DIR__ . '/../../core/Model.php';
 
 class Booking extends Model {
-    protected $table = 'bookings';
+    protected $table = 'booking';
     protected $primaryKey = 'id_booking';
     
     public function createBooking($data) {
         $rules = [
             'id_user' => 'required|numeric',
             'id_studio' => 'required|numeric',
-            'tanggal_booking' => 'required',
-            'waktu_mulai' => 'required',
-            'waktu_selesai' => 'required'
+            'tanggal_main' => 'required',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+            'total_bayar' => 'required|numeric'
         ];
         
         $errors = $this->validate($data, $rules);
@@ -21,38 +22,52 @@ class Booking extends Model {
             return ['success' => false, 'errors' => $errors];
         }
         
-        if ($this->isStudioBooked($data['id_studio'], $data['tanggal_booking'], $data['waktu_mulai'], $data['waktu_selesai'])) {
+        if ($this->isStudioBooked($data['id_studio'], $data['tanggal_main'], $data['jam_mulai'], $data['jam_selesai'])) {
             return ['success' => false, 'message' => 'Studio sudah dibooking di waktu tersebut'];
         }
         
         if (!isset($data['status_booking'])) {
-            $data['status_booking'] = 'pending';
+            $data['status_booking'] = 'Menunggu Konfirmasi';
         }
         
         if ($this->insert($data)) {
-            return ['success' => true, 'message' => 'Booking berhasil dibuat'];
+            $id = $this->db->lastInsertId();
+            return ['success' => true, 'message' => 'Booking berhasil dibuat', 'id_booking' => $id];
         }
         
         return ['success' => false, 'message' => 'Gagal membuat booking'];
     }
     
-    public function isStudioBooked($id_studio, $tanggal, $waktu_mulai, $waktu_selesai) {
+    public function isStudioBooked($id_studio, $tanggal, $jam_mulai, $jam_selesai) {
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE id_studio = :id_studio 
-                  AND tanggal_booking = :tanggal 
-                  AND status_booking NOT IN ('dibatalkan')
+                  AND tanggal_main = :tanggal 
+                  AND status_booking NOT IN ('Dibatalkan')
                   AND (
-                      (waktu_mulai < :waktu_selesai AND waktu_selesai > :waktu_mulai)
+                      (jam_mulai < :jam_selesai AND jam_selesai > :jam_mulai)
                   )";
         
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':id_studio', $id_studio, PDO::PARAM_INT);
         $stmt->bindParam(':tanggal', $tanggal);
-        $stmt->bindParam(':waktu_mulai', $waktu_mulai);
-        $stmt->bindParam(':waktu_selesai', $waktu_selesai);
+        $stmt->bindParam(':jam_mulai', $jam_mulai);
+        $stmt->bindParam(':jam_selesai', $jam_selesai);
         $stmt->execute();
         
         return $stmt->rowCount() > 0;
+    }
+    
+    public function getBookedHours($id_studio, $tanggal) {
+        $query = "SELECT jam_mulai, jam_selesai FROM " . $this->table . " 
+                  WHERE id_studio = :id_studio 
+                  AND tanggal_main = :tanggal 
+                  AND status_booking NOT IN ('Dibatalkan')";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id_studio', $id_studio, PDO::PARAM_INT);
+        $stmt->bindParam(':tanggal', $tanggal);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     public function getByUser($id_user) {
@@ -76,6 +91,20 @@ class Booking extends Model {
                   ORDER BY b.created_at DESC";
         
         $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getByDate($tanggal) {
+        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user
+                  FROM " . $this->table . " b
+                  JOIN studios s ON b.id_studio = s.id_studio
+                  JOIN users u ON b.id_user = u.id_user
+                  WHERE b.tanggal_main = :tanggal
+                  ORDER BY b.created_at DESC";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':tanggal', $tanggal);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -116,7 +145,7 @@ class Booking extends Model {
             return ['success' => false, 'message' => 'Booking tidak ditemukan'];
         }
         
-        if ($this->updateStatus($id_booking, 'dibatalkan')) {
+        if ($this->updateStatus($id_booking, 'Dibatalkan')) {
             return ['success' => true, 'message' => 'Booking berhasil dibatalkan'];
         }
         

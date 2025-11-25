@@ -1,23 +1,25 @@
 <?php
 
-session_start();
+// Jangan start session di sini, biar controller yang handle
+// session_start(); // REMOVED - Controller will handle this
 
 require_once '../core/Controller.php';
 require_once '../core/Model.php';
 
-$url = isset($_GET['url']) ? $_GET['url'] : 'home';
+// Default redirect ke login jika tidak ada URL
+$url = isset($_GET['url']) ? $_GET['url'] : 'auth/login';
 $url = rtrim($url, '/');
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
-$controllerName = isset($url[0]) && !empty($url[0]) ? ucfirst($url[0]) . 'Controller' : 'HomeController';
+$controllerName = isset($url[0]) && !empty($url[0]) ? ucfirst($url[0]) . 'Controller' : 'AuthController';
 $controllerFile = '../app/controllers/' . $controllerName . '.php';
 
 if (file_exists($controllerFile)) {
     require_once $controllerFile;
     $controller = new $controllerName();
     
-    $method = isset($url[1]) && !empty($url[1]) ? $url[1] : 'index';
+    $method = isset($url[1]) && !empty($url[1]) ? $url[1] : 'login';
     
     $params = isset($url[2]) ? array_slice($url, 2) : [];
     

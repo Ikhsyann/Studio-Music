@@ -7,7 +7,7 @@ class Studio extends Model {
     protected $primaryKey = 'id_studio';
     
     public function getAvailable() {
-        $query = "SELECT * FROM " . $this->table . " WHERE status = 'tersedia' ORDER BY nama_studio ASC";
+        $query = "SELECT * FROM " . $this->table . " WHERE status_ketersediaan = 'Tersedia' ORDER BY nama_studio ASC";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -16,7 +16,7 @@ class Studio extends Model {
     public function search($keyword) {
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE (nama_studio LIKE :keyword OR deskripsi LIKE :keyword OR fasilitas LIKE :keyword)
-                  AND status = 'tersedia'
+                  AND status_ketersediaan = 'Tersedia'
                   ORDER BY nama_studio ASC";
         $stmt = $this->db->prepare($query);
         $keyword = "%$keyword%";
@@ -38,8 +38,8 @@ class Studio extends Model {
             return ['success' => false, 'errors' => $errors];
         }
         
-        if (!isset($data['status'])) {
-            $data['status'] = 'tersedia';
+        if (!isset($data['status_ketersediaan'])) {
+            $data['status_ketersediaan'] = 'Tersedia';
         }
         
         if ($this->insert($data)) {
@@ -68,7 +68,8 @@ class Studio extends Model {
                       harga_per_jam = :harga_per_jam,
                       fasilitas = :fasilitas,
                       kapasitas = :kapasitas,
-                      status = :status
+                      gambar = :gambar,
+                      status_ketersediaan = :status_ketersediaan
                   WHERE id_studio = :id";
         
         $stmt = $this->db->prepare($query);
@@ -77,7 +78,8 @@ class Studio extends Model {
         $stmt->bindParam(':harga_per_jam', $data['harga_per_jam']);
         $stmt->bindParam(':fasilitas', $data['fasilitas']);
         $stmt->bindParam(':kapasitas', $data['kapasitas']);
-        $stmt->bindParam(':status', $data['status']);
+        $stmt->bindParam(':gambar', $data['gambar']);
+        $stmt->bindParam(':status_ketersediaan', $data['status_ketersediaan']);
         $stmt->bindParam(':id', $id_studio, PDO::PARAM_INT);
         
         if ($stmt->execute()) {

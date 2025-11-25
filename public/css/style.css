@@ -1,0 +1,664 @@
+/* ====================== 
+   MAIN STYLE CSS
+   ====================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+/* ====================== 
+   NAVBAR
+   ====================== */
+
+.navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand h2 {
+    color: white;
+    font-size: 24px;
+}
+
+.navbar-menu {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 5px;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link.logout {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ====================== 
+   MAIN CONTENT
+   ====================== */
+
+.main-content {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    min-height: calc(100vh - 200px);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.page-header h2 {
+    font-size: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    font-size: 16px;
+}
+
+/* ====================== 
+   STUDIO GRID (Dashboard Cards)
+   ====================== */
+
+.studio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.studio-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.studio-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.studio-card-image {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+}
+
+.studio-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.studio-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: white;
+}
+
+.studio-card-overlay h3 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.studio-price {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.studio-price-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.studio-description {
+    margin-top: 15px;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.studio-card:hover .studio-description {
+    opacity: 1;
+    max-height: 200px;
+}
+
+.studio-card-footer {
+    padding: 15px;
+    text-align: center;
+}
+
+.btn-booking {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-booking:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* ====================== 
+   BOOKING FORM
+   ====================== */
+
+.booking-container,
+.payment-container,
+.riwayat-container,
+.status-booking-container {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.booking-header,
+.payment-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.booking-header h1,
+.payment-header h1 {
+    color: #667eea;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.studio-info-box {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.studio-info-box h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.info-table {
+    width: 100%;
+}
+
+.info-table tr {
+    line-height: 2;
+}
+
+.info-table td:first-child {
+    font-weight: 500;
+    color: #666;
+    width: 150px;
+}
+
+.booking-form h3,
+.payment-form h3 {
+    margin: 25px 0 15px;
+    color: #333;
+    font-size: 18px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-control:read-only {
+    background-color: #f5f5f5;
+}
+
+.price-display {
+    background: #f0f4ff;
+    padding: 15px;
+    border-radius: 6px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+    text-align: center;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* ====================== 
+   PAYMENT SECTION
+   ====================== */
+
+.booking-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.summary-table {
+    width: 100%;
+}
+
+.summary-table tr {
+    line-height: 2.5;
+}
+
+.payment-info {
+    background: #fff3cd;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.bank-accounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.bank-account {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #ffc107;
+}
+
+/* ====================== 
+   RIWAYAT BOOKING
+   ====================== */
+
+.booking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.booking-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.booking-item-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.booking-item-header h3 {
+    font-size: 18px;
+}
+
+.booking-item-body {
+    padding: 20px;
+}
+
+.booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row .label {
+    color: #666;
+    font-weight: 500;
+}
+
+.info-row .value {
+    color: #333;
+}
+
+.booking-item-footer {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    text-align: right;
+}
+
+/* ====================== 
+   STATUS BADGES
+   ====================== */
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-menunggu-konfirmasi {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-disetujui {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-selesai {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-dibatalkan {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.payment-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.payment-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-berhasil {
+    background: #d4edda;
+    color: #155724;
+}
+
+.payment-gagal {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.payment-refund {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* ====================== 
+   STATUS BOOKING TABLE
+   ====================== */
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.booking-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.booking-table th,
+.booking-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.booking-table th {
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.booking-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.booking-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ====================== 
+   NO DATA
+   ====================== */
+
+.no-data {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-data p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* ====================== 
+   ALERTS
+   ====================== */
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 1200px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ====================== 
+   FOOTER
+   ====================== */
+
+.footer {
+    background: #2c3e50;
+    color: white;
+    padding: 30px 0;
+    margin-top: 50px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.footer p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* ====================== 
+   RESPONSIVE
+   ====================== */
+
+@media (max-width: 768px) {
+    .navbar-menu {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .studio-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-block {
+        width: 100%;
+    }
+    
+    .booking-table {
+        font-size: 12px;
+    }
+    
+    .booking-table th,
+    .booking-table td {
+        padding: 8px 10px;
+    }
+}
