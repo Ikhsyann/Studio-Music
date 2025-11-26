@@ -3,8 +3,8 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 25, 2025 at 12:57 PM
--- Server version: 8.4.6
+-- Generation Time: Nov 26, 2025 at 04:50 AM
+-- Server version: 10.11.13-MariaDB
 -- PHP Version: 8.4.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -28,10 +28,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `admin` (
-  `id_admin` int NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `id_admin` int(11) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -39,7 +39,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id_admin`, `email`, `password`, `created_at`) VALUES
-(1, 'admin@studiomusik.com', '$2y$12$161UTbI2QaJ4nAdm4lp5WekiZz2Mw1xhk9G62Xy0tFRabhCbSLuYe', '2025-11-24 17:28:10');
+(1, 'admin@studiomusik.com', '$2y$12$161UTbI2QaJ4nAdm4lp5WekiZz2Mw1xhk9G62Xy0tFRabhCbSLuYe', '2025-11-26 04:42:53');
 
 -- --------------------------------------------------------
 
@@ -48,15 +48,15 @@ INSERT INTO `admin` (`id_admin`, `email`, `password`, `created_at`) VALUES
 --
 
 CREATE TABLE `booking` (
-  `id_booking` int NOT NULL,
-  `id_user` int NOT NULL,
-  `id_studio` int NOT NULL,
+  `id_booking` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `id_studio` int(11) NOT NULL,
   `tanggal_main` date NOT NULL,
   `jam_mulai` time NOT NULL,
   `jam_selesai` time NOT NULL,
   `total_bayar` decimal(10,2) NOT NULL,
-  `status_booking` enum('Menunggu Konfirmasi','Disetujui','Selesai','Dibatalkan') COLLATE utf8mb4_unicode_ci DEFAULT 'Menunggu Konfirmasi',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `status_booking` enum('Menunggu Konfirmasi','Disetujui','Selesai','Dibatalkan') DEFAULT 'Menunggu Konfirmasi',
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -64,10 +64,10 @@ CREATE TABLE `booking` (
 --
 
 INSERT INTO `booking` (`id_booking`, `id_user`, `id_studio`, `tanggal_main`, `jam_mulai`, `jam_selesai`, `total_bayar`, `status_booking`, `created_at`) VALUES
-(4, 4, 1, '2025-11-24', '10:00:00', '13:00:00', 450000.00, 'Dibatalkan', '2025-11-24 17:48:21'),
-(5, 4, 1, '2025-11-24', '13:00:00', '15:00:00', 300000.00, 'Menunggu Konfirmasi', '2025-11-24 17:53:03'),
-(6, 4, 1, '2025-11-24', '15:00:00', '18:00:00', 450000.00, 'Disetujui', '2025-11-24 17:57:38'),
-(7, 4, 3, '2025-11-26', '15:00:00', '16:00:00', 200000.00, 'Disetujui', '2025-11-25 04:33:17');
+(1, 1, 5, '2025-11-27', '10:00:00', '13:00:00', 3000000.00, 'Disetujui', '2025-11-26 04:46:35'),
+(2, 1, 1, '2025-11-27', '10:00:00', '13:00:00', 450000.00, 'Dibatalkan', '2025-11-26 04:47:07'),
+(3, 1, 1, '2025-11-26', '19:00:00', '22:00:00', 450000.00, 'Dibatalkan', '2025-11-26 04:47:45'),
+(4, 1, 1, '2025-11-26', '14:00:00', '17:00:00', 450000.00, 'Menunggu Konfirmasi', '2025-11-26 04:48:31');
 
 -- --------------------------------------------------------
 
@@ -76,13 +76,13 @@ INSERT INTO `booking` (`id_booking`, `id_user`, `id_studio`, `tanggal_main`, `ja
 --
 
 CREATE TABLE `payments` (
-  `id_payment` int NOT NULL,
-  `id_booking` int NOT NULL,
+  `id_payment` int(11) NOT NULL,
+  `id_booking` int(11) NOT NULL,
   `jumlah_bayar` decimal(10,2) NOT NULL,
-  `metode_pembayaran` enum('Transfer Bank','E-Wallet','Cash') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `bukti_pembayaran` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `tanggal_pembayaran` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `keterangan` text COLLATE utf8mb4_unicode_ci
+  `metode_pembayaran` enum('Transfer Bank','E-Wallet','Cash') NOT NULL,
+  `bukti_pembayaran` varchar(255) DEFAULT NULL,
+  `tanggal_pembayaran` timestamp NULL DEFAULT current_timestamp(),
+  `keterangan` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -90,10 +90,10 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`id_payment`, `id_booking`, `jumlah_bayar`, `metode_pembayaran`, `bukti_pembayaran`, `tanggal_pembayaran`, `keterangan`) VALUES
-(3, 4, 450000.00, 'Transfer Bank', 'payment_4_1764006501.jpg', '2025-11-24 17:48:21', ''),
-(4, 5, 300000.00, 'E-Wallet', 'payment_5_1764006783.png', '2025-11-24 17:53:03', ''),
-(5, 6, 450000.00, 'Transfer Bank', 'payment_6_1764007058.jpeg', '2025-11-24 17:57:38', ''),
-(6, 7, 200000.00, 'Transfer Bank', 'payment_7_1764045197.jpg', '2025-11-25 04:33:17', '');
+(1, 1, 3000000.00, 'Transfer Bank', 'payment_1_1764132395.jpg', '2025-11-26 04:46:35', ''),
+(2, 2, 450000.00, 'Transfer Bank', 'payment_2_1764132427.jpg', '2025-11-26 04:47:07', ''),
+(3, 3, 450000.00, 'Transfer Bank', 'payment_3_1764132465.jpeg', '2025-11-26 04:47:45', ''),
+(4, 4, 450000.00, 'Transfer Bank', 'payment_4_1764132511.jpg', '2025-11-26 04:48:31', '');
 
 -- --------------------------------------------------------
 
@@ -102,15 +102,15 @@ INSERT INTO `payments` (`id_payment`, `id_booking`, `jumlah_bayar`, `metode_pemb
 --
 
 CREATE TABLE `studios` (
-  `id_studio` int NOT NULL,
-  `nama_studio` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `deskripsi` text COLLATE utf8mb4_unicode_ci,
+  `id_studio` int(11) NOT NULL,
+  `nama_studio` varchar(100) NOT NULL,
+  `deskripsi` text DEFAULT NULL,
   `harga_per_jam` decimal(10,2) NOT NULL,
-  `fasilitas` text COLLATE utf8mb4_unicode_ci,
-  `kapasitas` int NOT NULL,
-  `gambar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status_ketersediaan` enum('Tersedia','Tidak Tersedia') COLLATE utf8mb4_unicode_ci DEFAULT 'Tersedia',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `fasilitas` text DEFAULT NULL,
+  `kapasitas` int(11) NOT NULL,
+  `gambar` varchar(255) DEFAULT NULL,
+  `status_ketersediaan` enum('Tersedia','Tidak Tersedia') DEFAULT 'Tersedia',
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -118,11 +118,11 @@ CREATE TABLE `studios` (
 --
 
 INSERT INTO `studios` (`id_studio`, `nama_studio`, `deskripsi`, `harga_per_jam`, `fasilitas`, `kapasitas`, `gambar`, `status_ketersediaan`, `created_at`) VALUES
-(1, 'Studio A - Premium', 'Studio recording dengan peralatan profesional, akustik terbaik', 150000.00, 'Microphone Condenser, Audio Interface, Drum Set, Keyboard, Guitar Amp, Soundproof Room', 10, 'Studio_A.jpeg', 'Tersedia', '2025-11-24 17:28:10'),
-(2, 'Studio B - Standard', 'Studio untuk latihan band dengan peralatan lengkap', 100000.00, 'Drum Set, Bass Amp, Guitar Amp, Microphone, Mixer', 8, 'Studio_B.jpeg', 'Tersedia', '2025-11-24 17:28:10'),
-(3, 'Studio C - Recording', 'Studio khusus recording dengan engineer berpengalaman', 200000.00, 'Professional Microphone, DAW Software, Audio Interface, Mixing Console, Monitor Speaker', 5, 'Studio_C.jpeg', 'Tersedia', '2025-11-24 17:28:10'),
-(4, 'Studio D - Ekonomis', 'Studio ekonomis untuk latihan personal atau duo', 75000.00, 'Guitar Amp, Bass Amp, Microphone, Speaker', 4, 'Studio_D.jpeg', 'Tersedia', '2025-11-24 17:28:10'),
-(5, 'Studio F - Anti Normal', 'Studio Anti Normal', 1000000.00, 'Microphone, Hipdut, Drum, Piano', 10, 'Studio_F.jpg', 'Tersedia', '2025-11-25 05:34:59');
+(1, 'Studio A - Premium', 'Studio recording dengan peralatan profesional, akustik terbaik', 150000.00, 'Microphone Condenser, Audio Interface, Drum Set, Keyboard, Guitar Amp, Soundproof Room', 10, 'Studio_A.jpeg', 'Tersedia', '2025-11-26 04:42:54'),
+(2, 'Studio B - Standard', 'Studio untuk latihan band dengan peralatan lengkap', 100000.00, 'Drum Set, Bass Amp, Guitar Amp, Microphone, Mixer', 8, 'Studio_B.jpeg', 'Tersedia', '2025-11-26 04:42:54'),
+(3, 'Studio C - Recording', 'Studio khusus recording dengan engineer berpengalaman', 200000.00, 'Professional Microphone, DAW Software, Audio Interface, Mixing Console, Monitor Speaker', 5, 'Studio_C.jpeg', 'Tersedia', '2025-11-26 04:42:54'),
+(4, 'Studio D - Ekonomis', 'Studio ekonomis untuk latihan personal atau duo', 75000.00, 'Guitar Amp, Bass Amp, Microphone, Speaker', 4, 'Studio_D.jpeg', 'Tersedia', '2025-11-26 04:42:54'),
+(5, 'Anti-Normal Studio', 'Produce Music', 1000000.00, 'Microphone, Drum, Encoder, Hipdut', 10, 'Studio_F.jpg', 'Tersedia', '2025-11-26 04:45:40');
 
 -- --------------------------------------------------------
 
@@ -131,12 +131,12 @@ INSERT INTO `studios` (`id_studio`, `nama_studio`, `deskripsi`, `harga_per_jam`,
 --
 
 CREATE TABLE `users` (
-  `id_user` int NOT NULL,
-  `nama` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `no_telp` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `id_user` int(11) NOT NULL,
+  `nama` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `no_telp` varchar(15) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -144,7 +144,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id_user`, `nama`, `email`, `password`, `no_telp`, `created_at`) VALUES
-(4, 'Muhammad Ikhsyan', '10241049@student.itk.ac.id', '$2y$12$Fv0Pzc8CzuIbYYmN88zT0.OVvdwkVyLAM6XlDIZVk3UiXSAw//8hO', '085705012504', '2025-11-24 17:44:24');
+(1, 'Muhammad Ikhsyan', '10241049@student.itk.ac.id', '$2y$12$Fv0Pzc8CzuIbYYmN88zT0.OVvdwkVyLAM6XlDIZVk3UiXSAw//8hO', '085705012504', '2025-11-26 04:42:57');
 
 --
 -- Indexes for dumped tables
@@ -198,31 +198,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin`
 --
 ALTER TABLE `admin`
-  MODIFY `id_admin` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_admin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `id_booking` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_booking` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id_payment` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_payment` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `studios`
 --
 ALTER TABLE `studios`
-  MODIFY `id_studio` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_studio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
