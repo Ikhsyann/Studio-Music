@@ -2,9 +2,8 @@
 
 <div class="dashboard-container">
     <div class="page-header">
-        <h2>Studio Musik</h2>
+        <h1>Studio Music</h1>
         <p class="subtitle">Booking yang baik, suara yang merdu</p>
-        <p class="subtitle">Izinn........</p>
     </div>
     
     <div class="studio-grid">
@@ -16,7 +15,7 @@
                         
                         <div class="studio-overlay">
                             <div class="studio-location">
-                                <?= htmlspecialchars($studio['nama_studio']) ?>
+                                <?= strtoupper(htmlspecialchars($studio['nama_studio'])) ?>
                             </div>
                             <h3 class="studio-title-overlay"><?= htmlspecialchars($studio['nama_studio']) ?></h3>
                             

@@ -2,6 +2,8 @@
    AUTH CSS (Login & Register)
    ====================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -10,7 +12,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Background global (gradient + gambar) diatur dari minimalist.css */
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -24,10 +26,11 @@ body {
 }
 
 .auth-box {
-    background: white;
-    border-radius: 15px;
+    background: linear-gradient(135deg, #1E2F47 0%, #182838 100%);
+    border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(91, 163, 245, 0.25);
 }
 
 .auth-header {
@@ -36,13 +39,16 @@ body {
 }
 
 .auth-header h1 {
-    color: #667eea;
+    color: #5BA3F5;
     font-size: 32px;
     margin-bottom: 10px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .auth-header p {
-    color: #666;
+    color: #C4C4C4;
     font-size: 14px;
 }
 
@@ -57,7 +63,7 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #333;
+    color: #FFFFFF !important;
     font-weight: 500;
     font-size: 14px;
 }
@@ -65,16 +71,18 @@ body {
 .form-control {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid rgba(91, 163, 245, 0.25);
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
+    background: rgba(21, 34, 56, 0.5);
+    color: #F0F0F0;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #5BA3F5;
+    box-shadow: 0 0 0 3px rgba(91, 163, 245, 0.15);
 }
 
 .btn {
@@ -91,13 +99,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5BA3F5 0%, #7CB8F7 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(91, 163, 245, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(91, 163, 245, 0.45);
 }
 
 .btn-block {
@@ -110,18 +119,19 @@ body {
 }
 
 .auth-footer p {
-    color: #666;
+    color: #C4C4C4;
     font-size: 14px;
 }
 
 .auth-footer a {
-    color: #667eea;
+    color: #5BA3F5;
     text-decoration: none;
     font-weight: 600;
 }
 
 .auth-footer a:hover {
     text-decoration: underline;
+    color: #7CB8F7;
 }
 
 .alert {
@@ -132,13 +142,15 @@ body {
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.4);
 }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #F44336;
+    border: 1px solid rgba(244, 67, 54, 0.4);
+}
     border: 1px solid #f5c6cb;
 }

@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'Studio Musik' ?></title>
-    <link rel="stylesheet" href="/Studio-Music/public/css/minimalist.css">
+    <!-- Urutan: base layout (style.css) kemudian tema global (minimalist.css) -->
+    <link rel="stylesheet" href="/Studio-Music/public/css/style.css?v=2">
+    <link rel="stylesheet" href="/Studio-Music/public/css/minimalist.css?v=2">
 </head>
 <body>
     <nav class="navbar">

@@ -7,25 +7,28 @@
     </div>
     
     <div class="payment-content">
-        <div class="booking-summary">
-            <h3>Ringkasan Booking</h3>
-            <table class="summary-table">
-                <tr>
-                    <td>Nama Studio</td>
-                    <td>: <?= htmlspecialchars($booking['nama_studio']) ?></td>
-                </tr>
-                <tr>
-                    <td>Total Bayar</td>
-                    <td><strong>: Rp. <?= number_format($booking['total_bayar'], 0, ',', '.') ?></strong></td>
-                </tr>
-            </table>
+        <div class="payment-left-column">
+            <div class="booking-summary">
+                <h3>Ringkasan Booking</h3>
+                <table class="summary-table">
+                    <tr>
+                        <td>Nama Studio</td>
+                        <td>: <?= htmlspecialchars($booking['nama_studio']) ?></td>
+                    </tr>
+                    <tr>
+                        <td>Total Bayar</td>
+                        <td><strong>: Rp. <?= number_format($booking['total_bayar'], 0, ',', '.') ?></strong></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="payment-info">
+                <h3>Informasi Pembayaran</h3>
+                <p>Silakan pilih metode pembayaran dan transfer ke rekening yang sesuai:</p>
+            </div>
         </div>
-        
-        <div class="payment-info">
-            <h3>Informasi Pembayaran</h3>
-            <p>Silakan pilih metode pembayaran dan transfer ke rekening yang sesuai:</p>
-        </div>
-        
+
+        <div class="payment-right-column">
         <form action="/Studio-Music/public/index.php?url=user/paymentProcess" method="POST" enctype="multipart/form-data" class="payment-form">
             <input type="hidden" name="jumlah_bayar" value="<?= $booking['total_bayar'] ?>">
             
@@ -92,6 +95,7 @@
                 <button type="submit" class="btn btn-primary btn-block">Konfirmasi Pembayaran</button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 

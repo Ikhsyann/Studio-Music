@@ -10,10 +10,15 @@ class AdminController extends Controller {
         }
     }
     
-    public function dashboard() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    private function checkAdmin() {
+        if (!isset($_SESSION['admin']) || $_SESSION['role'] !== 'admin') {
             $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+            exit;
         }
+    }
+    
+    public function dashboard() {
+        $this->checkAdmin();
         
         $adminModel = $this->model('Admin');
         $bookingModel = $this->model('Booking');
@@ -38,10 +43,7 @@ class AdminController extends Controller {
     }
 
     public function verifyPayment() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-
+        $this->checkAdmin();
         $id_payment = $_POST['id_payment'] ?? $_GET['id_payment'] ?? null;
         if (!$id_payment) {
             $this->setFlash('error', 'ID pembayaran tidak ditemukan');
@@ -76,9 +78,7 @@ class AdminController extends Controller {
     }
 
     public function rejectPayment() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
+        $this->checkAdmin();
         $id_payment = $_POST['id_payment'] ?? $_GET['id_payment'] ?? null;
         if (!$id_payment) {
             $this->setFlash('error', 'ID pembayaran tidak ditemukan');
@@ -105,16 +105,8 @@ class AdminController extends Controller {
     }
     
     public function approveBooking() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-
-        $id_booking = null;
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_booking = $_POST['id_booking'] ?? null;
-        } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $id_booking = $_GET['id_booking'] ?? null;
-        }
+        $this->checkAdmin();
+        $id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null;
 
         if ($id_booking === null) {
             $this->setFlash('error', 'ID booking tidak ditemukan');
@@ -137,16 +129,8 @@ class AdminController extends Controller {
     }
     
     public function rejectBooking() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-
-        $id_booking = null;
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_booking = $_POST['id_booking'] ?? null;
-        } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $id_booking = $_GET['id_booking'] ?? null;
-        }
+        $this->checkAdmin();
+        $id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null;
 
         if ($id_booking === null) {
             $this->setFlash('error', 'ID booking tidak ditemukan');
@@ -169,10 +153,7 @@ class AdminController extends Controller {
     }
     
     public function users() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         $userModel = $this->model('User');
         $allUsers = $userModel->all();
         
@@ -190,10 +171,7 @@ class AdminController extends Controller {
     }
     
     public function deleteUser() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id_user = $_POST['id_user'] ?? 0;
             
@@ -211,10 +189,7 @@ class AdminController extends Controller {
     }
     
     public function deleteAdmin() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id_admin = $_POST['id_admin'] ?? 0;
             
@@ -232,18 +207,12 @@ class AdminController extends Controller {
     }
     
     public function logout() {
-        session_start();
-        unset($_SESSION['admin']);
-        unset($_SESSION['role']);
         session_destroy();
         $this->redirect('/Studio-Music/public/index.php?url=auth/login');
     }
 
     public function studios() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         $studioModel = $this->model('Studio');
         $allStudios = $studioModel->all();
         
@@ -257,10 +226,7 @@ class AdminController extends Controller {
     }
     
     public function addStudio() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         $data = [
             'admin' => $_SESSION['admin'],
             'title' => 'Tambah Studio'
@@ -270,10 +236,7 @@ class AdminController extends Controller {
     }
     
     public function editStudio($id_studio = null) {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if (!$id_studio) {
             $this->setFlash('error', 'ID Studio tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
@@ -297,10 +260,7 @@ class AdminController extends Controller {
     }
     
     public function saveStudio() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
         }
@@ -400,10 +360,7 @@ class AdminController extends Controller {
     }
     
     public function deleteStudio() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
         }
@@ -421,10 +378,7 @@ class AdminController extends Controller {
     }
     
     public function addUser() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         $data = [
             'admin' => $_SESSION['admin'],
             'title' => 'Tambah User'
@@ -434,10 +388,7 @@ class AdminController extends Controller {
     }
     
     public function addAdmin() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         $data = [
             'admin' => $_SESSION['admin'],
             'title' => 'Tambah Admin'
@@ -447,22 +398,43 @@ class AdminController extends Controller {
     }
     
     public function saveUser() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         }
         
-        $nama = $_POST['nama'] ?? '';
-        $email = $_POST['email'] ?? '';
+        // Remove confirm_password, it's only for client-side validation
+        $nama = trim($_POST['nama'] ?? '');
+        $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        $no_telp = $_POST['no_telp'] ?? '';
+        $no_telp = trim($_POST['no_telp'] ?? '');
         
-        if (empty($nama) || empty($email) || empty($password) || empty($no_telp)) {
-            $this->setFlash('error', 'Semua field harus diisi');
+        // Server-side validation
+        $errors = [];
+        
+        if (empty($nama) || strlen($nama) < 3) {
+            $errors[] = 'Nama minimal 3 karakter';
+        }
+        if (!preg_match('/^[A-Za-z\s]+$/', $nama)) {
+            $errors[] = 'Nama hanya boleh berisi huruf dan spasi';
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Format email tidak valid';
+        }
+        
+        if (!preg_match('/^[0-9]{10,15}$/', $no_telp)) {
+            $errors[] = 'Nomor telepon harus 10-15 digit angka';
+        }
+        
+        if (strlen($password) < 6) {
+            $errors[] = 'Password minimal 6 karakter';
+        }
+        
+        if (!empty($errors)) {
+            $this->setFlash('error', implode(', ', $errors));
             $this->redirect('/Studio-Music/public/index.php?url=admin/addUser');
+            return;
         }
         
         $userData = [
@@ -485,20 +457,30 @@ class AdminController extends Controller {
     }
     
     public function saveAdmin() {
-        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-        }
-        
+        $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         }
         
-        $email = $_POST['email'] ?? '';
+        // Remove confirm_password, it's only for client-side validation
+        $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         
-        if (empty($email) || empty($password)) {
-            $this->setFlash('error', 'Email dan password harus diisi');
+        // Server-side validation
+        $errors = [];
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Format email tidak valid';
+        }
+        
+        if (strlen($password) < 6) {
+            $errors[] = 'Password minimal 6 karakter';
+        }
+        
+        if (!empty($errors)) {
+            $this->setFlash('error', implode(', ', $errors));
             $this->redirect('/Studio-Music/public/index.php?url=admin/addAdmin');
+            return;
         }
         
         $adminModel = $this->model('Admin');

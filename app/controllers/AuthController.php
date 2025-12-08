@@ -60,12 +60,45 @@ class AuthController extends Controller {
     
     public function registerProcess() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Remove confirm_password, it's only for client-side validation
             $data = [
-                'nama' => $_POST['nama'] ?? '',
-                'email' => $_POST['email'] ?? '',
+                'nama' => trim($_POST['nama'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
                 'password' => $_POST['password'] ?? '',
-                'no_telp' => $_POST['no_telp'] ?? ''
+                'no_telp' => trim($_POST['no_telp'] ?? '')
             ];
+            
+            // Server-side validation
+            $errors = [];
+            
+            // Validate nama
+            if (empty($data['nama']) || strlen($data['nama']) < 3) {
+                $errors[] = 'Nama minimal 3 karakter';
+            }
+            if (!preg_match('/^[A-Za-z\s]+$/', $data['nama'])) {
+                $errors[] = 'Nama hanya boleh berisi huruf dan spasi';
+            }
+            
+            // Validate email
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Format email tidak valid';
+            }
+            
+            // Validate phone
+            if (!preg_match('/^[0-9]{10,15}$/', $data['no_telp'])) {
+                $errors[] = 'Nomor telepon harus 10-15 digit angka';
+            }
+            
+            // Validate password
+            if (strlen($data['password']) < 6) {
+                $errors[] = 'Password minimal 6 karakter';
+            }
+            
+            if (!empty($errors)) {
+                $this->setFlash('error', implode(', ', $errors));
+                $this->redirect('/Studio-Music/public/index.php?url=auth/register');
+                return;
+            }
             
             $userModel = $this->model('User');
             $result = $userModel->register($data);
@@ -81,7 +114,6 @@ class AuthController extends Controller {
     }
     
     public function logout() {
-        session_start();
         session_destroy();
         $this->redirect('/Studio-Music/public/index.php?url=auth/login');
     }

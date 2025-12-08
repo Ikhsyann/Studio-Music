@@ -2,6 +2,8 @@
    MAIN STYLE CSS
    ====================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -10,8 +12,9 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
+    /* Background global (gradient + gambar) diatur dari minimalist.css */
+    color: #F0F0F0;
+    min-height: 100vh;
 }
 
 /* ====================== 
@@ -19,15 +22,16 @@ body {
    ====================== */
 
 .navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1E2F47 0%, #2D4563 100%);
     padding: 15px 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(91, 163, 245, 0.15);
 }
 
 .navbar-container {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -46,21 +50,23 @@ body {
 }
 
 .nav-link {
-    color: white;
+    color: #C4C4C4;
     text-decoration: none;
     font-weight: 500;
     font-size: 15px;
     transition: all 0.3s ease;
     padding: 8px 16px;
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(91, 163, 245, 0.15);
+    color: #F0F0F0;
 }
 
 .nav-link.logout {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(91, 163, 245, 0.25);
+    color: #F0F0F0;
 }
 
 /* ====================== 
@@ -68,9 +74,9 @@ body {
    ====================== */
 
 .main-content {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 30px auto;
-    padding: 0 20px;
+    padding: 0 32px;
     min-height: calc(100vh - 200px);
 }
 
@@ -81,20 +87,24 @@ body {
 
 .page-header h1 {
     font-size: 36px;
-    color: #333;
+    color: #F0F0F0;
     margin-bottom: 10px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
 }
 
 .page-header h2 {
     font-size: 48px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5BA3F5 0%, #7CB8F7 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 15px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
 }
 
 .page-header .subtitle {
-    color: #666;
+    color: #C4C4C4;
     font-size: 16px;
 }
 
@@ -110,12 +120,13 @@ body {
 }
 
 .studio-card {
-    background: white;
+    background: linear-gradient(135deg, #1E2F47 0%, #182838 100%);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
     position: relative;
+    border: 1px solid rgba(91, 163, 245, 0.2);
 }
 
 .studio-card:hover {
@@ -209,35 +220,51 @@ body {
 .payment-container,
 .riwayat-container,
 .status-booking-container {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #1E2F47 0%, #182838 100%);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+    max-width: 90%;
+    margin: 0 auto;
+    border: 1px solid rgba(91, 163, 245, 0.2);
 }
 
 .booking-header,
 .payment-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid rgba(91, 163, 245, 0.2);
 }
 
 .booking-header h1,
 .payment-header h1 {
-    color: #667eea;
-    font-size: 28px;
-    margin-bottom: 10px;
+    color: #5BA3F5;
+    font-size: 32px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.5px;
+}
+
+.booking-header p,
+.payment-header p {
+    color: #C4C4C4;
+    font-size: 15px;
+    margin: 0;
 }
 
 .studio-info-box {
-    background: #f8f9fa;
+    background: rgba(91, 163, 245, 0.08);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 30px;
+    border: 1px solid rgba(91, 163, 245, 0.2);
 }
 
 .studio-info-box h3 {
     margin-bottom: 15px;
-    color: #333;
+    color: #F0F0F0;
 }
 
 .info-table {
@@ -250,14 +277,14 @@ body {
 
 .info-table td:first-child {
     font-weight: 500;
-    color: #666;
+    color: #C4C4C4;
     width: 150px;
 }
 
 .booking-form h3,
 .payment-form h3 {
     margin: 25px 0 15px;
-    color: #333;
+    color: #F0F0F0;
     font-size: 18px;
 }
 
@@ -268,44 +295,57 @@ body {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
-    color: #333;
-    font-weight: 500;
+    margin-bottom: 10px;
+    color: #FFFFFF !important;
+    font-weight: 600;
     font-size: 14px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    color: #C4C4C4;
+    font-size: 13px;
 }
 
 .form-control {
     width: 100%;
-    padding: 10px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 12px 16px;
+    border: 2px solid rgba(91, 163, 245, 0.25);
+    border-radius: 8px;
+    font-size: 15px;
     transition: all 0.3s ease;
+    font-family: inherit;
+    background: rgba(21, 34, 56, 0.5);
+    color: #F0F0F0;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #5BA3F5;
+    box-shadow: 0 0 0 4px rgba(91, 163, 245, 0.15);
 }
 
 .form-control:read-only {
-    background-color: #f5f5f5;
+    background-color: rgba(91, 163, 245, 0.08);
+    cursor: not-allowed;
 }
 
 .price-display {
-    background: #f0f4ff;
+    background: rgba(91, 163, 245, 0.15);
     padding: 15px;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 24px;
     font-weight: bold;
-    color: #667eea;
+    color: #5BA3F5;
     text-align: center;
+    border: 1px solid rgba(91, 163, 245, 0.35);
+    box-shadow: 0 0 15px rgba(91, 163, 245, 0.15);
 }
 
 .form-actions {
@@ -315,26 +355,175 @@ body {
     margin-top: 30px;
 }
 
+/* ====================== 
+   PAYMENT & BOOKING CARDS (DARK THEME)
+   ====================== */
+
+/* Layout utama konten pembayaran */
+.payment-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.payment-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.payment-right-column {
+    height: 100%;
+}
+
+.booking-summary,
+.payment-info,
+.payment-form {
+    background: rgba(11, 24, 41, 0.9);
+    border-radius: 18px;
+    padding: 20px 24px;
+    border: 1px solid rgba(91, 163, 245, 0.22);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+    position: relative;
+    overflow: hidden;
+}
+
+.booking-summary::before,
+.payment-info::before,
+.payment-form::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at top left, rgba(91, 163, 245, 0.15), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.booking-summary:hover::before,
+.payment-info:hover::before,
+.payment-form:hover::before {
+    opacity: 1;
+}
+
+.booking-summary:hover,
+.payment-info:hover,
+.payment-form:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+    transition: all 0.25s ease;
+}
+
+/* Konsistensi field Data Diri & Payment */
+
+.payment-form .form-control,
+.booking-form .form-control {
+    background: rgba(21, 34, 56, 0.9);
+    border: 2px solid rgba(91, 163, 245, 0.25);
+    color: #F0F0F0;
+}
+
+.payment-form .form-control::placeholder,
+.booking-form .form-control::placeholder {
+    color: #9CA3AF;
+    opacity: 0.8;
+}
+
+.payment-form .form-control[readonly],
+.payment-form .form-control:disabled,
+.booking-form .form-control[readonly],
+.booking-form .form-control:disabled {
+    background: rgba(21, 34, 56, 0.6);
+    color: #E5E7EB;
+    cursor: not-allowed;
+    border-color: rgba(148, 163, 184, 0.5);
+}
+
+.payment-form textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Detail rekening & metode pembayaran */
+
+.payment-method-info {
+    margin-top: 10px;
+}
+
+.bank-accounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.bank-account {
+    background: rgba(21, 34, 56, 0.9);
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid rgba(91, 163, 245, 0.25);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+    font-size: 14px;
+    color: #E5E7EB;
+    transition: all 0.25s ease;
+}
+
+.bank-account strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #5BA3F5;
+}
+
+.bank-account:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+    border-color: rgba(91, 163, 245, 0.6);
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.summary-table td {
+    padding: 6px 0;
+    color: #E5E7EB;
+}
+
+.summary-table td:first-child {
+    width: 140px;
+    color: #9CA3AF;
+}
+
 .btn {
-    padding: 12px 24px;
+    padding: 12px 28px;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
+    text-align: center;
+}
+
+.btn-block {
+    width: 100%;
+    display: block;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5BA3F5 0%, #7CB8F7 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(91, 163, 245, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 24px rgba(91, 163, 245, 0.45), 0 0 20px rgba(91, 163, 245, 0.2);
 }
 
 .btn-secondary {
@@ -368,11 +557,11 @@ body {
    PAYMENT SECTION
    ====================== */
 
-.booking-summary {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+.booking-summary h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #F0F0F0;
 }
 
 .summary-table {
@@ -383,26 +572,31 @@ body {
     line-height: 2.5;
 }
 
-.payment-info {
-    background: #fff3cd;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+.summary-table td {
+    font-size: 15px;
+    color: #C4C4C4;
 }
 
-.bank-accounts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+.summary-table td:first-child {
+    font-weight: 500;
+    color: #F0F0F0;
+    width: 140px;
 }
 
-.bank-account {
-    background: white;
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #ffc107;
+.payment-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #7CB8F7;
 }
+
+.payment-info p {
+    font-size: 14px;
+    color: #C4C4C4;
+    margin: 0;
+}
+
+/* Versi lama payment-method-info & bank-account digantikan oleh versi dark di atas */
 
 /* ====================== 
    RIWAYAT BOOKING
@@ -415,14 +609,15 @@ body {
 }
 
 .booking-item {
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #1E2F47 0%, #182838 100%);
+    border: 2px solid rgba(91, 163, 245, 0.25);
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .booking-item-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5BA3F5 0%, #7CB8F7 100%);
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -448,22 +643,23 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(91, 163, 245, 0.15);
 }
 
 .info-row .label {
-    color: #666;
+    color: #C4C4C4;
     font-weight: 500;
 }
 
 .info-row .value {
-    color: #333;
+    color: #F0F0F0;
 }
 
 .booking-item-footer {
     padding: 15px 20px;
-    background: #f8f9fa;
+    background: rgba(30, 47, 71, 0.3);
     text-align: right;
+    border-top: 1px solid rgba(91, 163, 245, 0.1);
 }
 
 /* ====================== 
@@ -476,26 +672,32 @@ body {
     font-size: 12px;
     font-weight: 600;
     display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .status-menunggu-konfirmasi {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(245, 158, 11, 0.15);
+    color: #FDB022;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .status-disetujui {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .status-selesai {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60A5FA;
+    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .status-dibatalkan {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(239, 68, 68, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .payment-badge {
@@ -503,26 +705,32 @@ body {
     border-radius: 15px;
     font-size: 11px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .payment-pending {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(245, 158, 11, 0.15);
+    color: #FDB022;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .payment-berhasil {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .payment-gagal {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(239, 68, 68, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .payment-refund {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: rgba(156, 163, 175, 0.15);
+    color: #9CA3AF;
+    border: 1px solid rgba(156, 163, 175, 0.3);
 }
 
 /* ====================== 
@@ -531,34 +739,55 @@ body {
 
 .table-responsive {
     overflow-x: auto;
+    background: rgba(30, 47, 71, 0.5);
+    border: 1px solid rgba(91, 163, 245, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    margin: 0;
 }
 
 .booking-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
 }
 
 .booking-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.booking-table th,
-.booking-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    background: rgba(91, 163, 245, 0.08);
+    border-bottom: 1px solid rgba(91, 163, 245, 0.2);
 }
 
 .booking-table th {
+    padding: 16px 20px;
+    text-align: left;
     font-weight: 600;
     font-size: 13px;
+    color: #F0F0F0;
     text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.booking-table th:first-child,
+.booking-table th:last-child {
+    text-align: center;
+}
+
+.booking-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(45, 69, 99, 0.3);
+    font-size: 15px;
+    color: #C4C4C4;
+    font-weight: 400;
+    vertical-align: middle;
+}
+
+.booking-table td:first-child,
+.booking-table td:last-child {
+    text-align: center;
 }
 
 .booking-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: rgba(91, 163, 245, 0.06);
+    transition: all 0.3s ease;
 }
 
 .booking-table tbody tr:last-child td {
@@ -593,15 +822,15 @@ body {
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* ====================== 
@@ -609,10 +838,12 @@ body {
    ====================== */
 
 .footer {
-    background: #2c3e50;
+    background: linear-gradient(135deg, #1E2F47 0%, #152238 100%);
     color: white;
     padding: 30px 0;
     margin-top: 50px;
+    border-top: 2px solid rgba(91, 163, 245, 0.15);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .footer-container {
@@ -635,6 +866,14 @@ body {
     .navbar-menu {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .payment-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-right-column {
+        margin-top: 4px;
     }
     
     .studio-grid {

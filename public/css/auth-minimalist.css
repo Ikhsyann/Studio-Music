@@ -9,17 +9,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fafafa;
+    /* Background global dari minimalist.css */
     padding: 20px;
 }
 
 .auth-box {
-    background: white;
+    background: linear-gradient(135deg, #1E2F47 0%, #182838 100%);
     padding: 40px;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    border: 1px solid rgba(91, 163, 245, 0.25);
     width: 100%;
     max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
 }
 
 .auth-header {
@@ -29,13 +30,13 @@
 
 .auth-header h1 {
     font-size: 24px;
-    color: #363c4f;
+    color: #F0F0F0;
     margin-bottom: 8px;
     font-weight: 600;
 }
 
 .auth-header p {
-    color: #666;
+    color: #C4C4C4;
     font-size: 14px;
 }
 
@@ -50,15 +51,16 @@
 
 .auth-footer p {
     font-size: 14px;
-    color: #666;
+    color: #C4C4C4;
 }
 
 .auth-footer a {
-    color: #363c4f;
+    color: #5BA3F5;
     text-decoration: none;
     font-weight: 500;
 }
 
 .auth-footer a:hover {
     text-decoration: underline;
+    color: #7CB8F7;
 }

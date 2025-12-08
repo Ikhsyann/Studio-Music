@@ -9,7 +9,6 @@
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">📅</div>
             <div class="stat-info">
                 <h3><?= $totalBookings ?></h3>
                 <p>Total Booking</p>
@@ -17,7 +16,6 @@
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon"></div>
             <div class="stat-info">
                 <h3><?= $totalStudios ?></h3>
                 <p>Total Studio</p>
@@ -25,7 +23,6 @@
         </div>
         
         <div class="stat-card">
-            <div class="stat-icon">👥</div>
             <div class="stat-info">
                 <h3><?= $totalUsers ?></h3>
                 <p>Total User</p>
@@ -75,7 +72,7 @@
                                 </td>
                                 <td>
                                     <?php if (!empty($booking['admin_email'])): ?>
-                                        <span style="font-size: 12px; color: #666;">
+                                        <span style="font-size: 12px; color: #c5c5c5ff;">
                                             <?= htmlspecialchars($booking['admin_email']) ?>
                                         </span>
                                     <?php else: ?>
