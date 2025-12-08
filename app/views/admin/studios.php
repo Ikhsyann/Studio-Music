@@ -63,8 +63,13 @@
                 </table>
             </div>
         <?php else: ?>
-            <div class="no-data">
-                <p>Belum ada studio di sistem.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">🎵</div>
+                <h3>Belum Ada Studio</h3>
+                <p>Tambahkan studio musik pertama Anda untuk mulai menerima booking dari pengguna.</p>
+                <a href="/Studio-Music/public/index.php?url=admin/addStudio" class="btn btn-primary">
+                    Tambah Studio Baru
+                </a>
             </div>
         <?php endif; ?>
     </div>

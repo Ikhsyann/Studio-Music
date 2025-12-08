@@ -10,12 +10,12 @@
     <nav class="navbar">
         <div class="navbar-container">
             <div class="navbar-brand">
-                <h2>🔐 Admin Panel</h2>
+                <h2>Admin Panel</h2>
             </div>
             <ul class="navbar-menu">
                 <li><a href="/Studio-Music/public/index.php?url=admin/dashboard" class="nav-link">Dashboard</a></li>
                 <li><a href="/Studio-Music/public/index.php?url=admin/studios" class="nav-link">Kelola Studio</a></li>
-                <li><a href="/Studio-Music/public/index.php?url=admin/users" class="nav-link">Kelola User</a></li>
+                <li><a href="/Studio-Music/public/index.php?url=admin/users" class="nav-link">Kelola Akun</a></li>
                 <li><a href="/Studio-Music/public/index.php?url=admin/logout" class="nav-link logout">Logout</a></li>
             </ul>
         </div>

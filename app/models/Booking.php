@@ -30,6 +30,9 @@ class Booking extends Model {
             $data['status_booking'] = 'Menunggu Konfirmasi';
         }
         
+        // Do not set `id_admin` here. New bookings should have NULL id_admin until
+        // an admin approves/rejects them. The DB migration will allow NULLs.
+        
         if ($this->insert($data)) {
             $id = $this->db->lastInsertId();
             return ['success' => true, 'message' => 'Booking berhasil dibuat', 'id_booking' => $id];
@@ -84,10 +87,12 @@ class Booking extends Model {
     }
     
     public function getAllBookings() {
-        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user
+        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user,
+                  a.email as admin_email
                   FROM " . $this->table . " b
                   JOIN studios s ON b.id_studio = s.id_studio
                   JOIN users u ON b.id_user = u.id_user
+                  LEFT JOIN admin a ON b.id_admin = a.id_admin
                   ORDER BY b.created_at DESC";
         
         $stmt = $this->db->prepare($query);
@@ -96,10 +101,12 @@ class Booking extends Model {
     }
     
     public function getByDate($tanggal) {
-        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user
+        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user,
+                  a.email as admin_email
                   FROM " . $this->table . " b
                   JOIN studios s ON b.id_studio = s.id_studio
                   JOIN users u ON b.id_user = u.id_user
+                  LEFT JOIN admin a ON b.id_admin = a.id_admin
                   WHERE b.tanggal_main = :tanggal
                   ORDER BY b.created_at DESC";
         
@@ -109,14 +116,27 @@ class Booking extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function updateStatus($id_booking, $status) {
-        $query = "UPDATE " . $this->table . " 
-                  SET status_booking = :status 
-                  WHERE id_booking = :id";
+    public function updateStatus($id_booking, $status, $id_admin = null) {
+        if ($id_admin !== null) {
+            $query = "UPDATE " . $this->table . " 
+                      SET status_booking = :status,
+                          id_admin = :id_admin
+                      WHERE id_booking = :id";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':id_admin', $id_admin, PDO::PARAM_INT);
+            $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
+        } else {
+            $query = "UPDATE " . $this->table . " 
+                      SET status_booking = :status 
+                      WHERE id_booking = :id";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
+        }
         
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':status', $status);
-        $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
         return $stmt->execute();
     }
     

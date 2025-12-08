@@ -26,17 +26,17 @@
             <form action="/Studio-Music/public/index.php?url=auth/registerProcess" method="POST" class="auth-form">
                 <div class="form-group">
                     <label for="nama">Nama Lengkap</label>
-                    <input type="text" id="nama" name="nama" class="form-control" required>
+                    <input type="text" id="nama" name="nama" class="form-control" required value="<?= htmlspecialchars(old('nama', '')) ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" required>
+                    <input type="email" id="email" name="email" class="form-control" required value="<?= htmlspecialchars(old('email', '')) ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="no_telp">No. Telepon</label>
-                    <input type="tel" id="no_telp" name="no_telp" class="form-control" required>
+                    <input type="tel" id="no_telp" name="no_telp" class="form-control" required value="<?= htmlspecialchars(old('no_telp', '')) ?>">
                 </div>
                 
                 <div class="form-group">

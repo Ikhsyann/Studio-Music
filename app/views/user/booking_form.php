@@ -56,7 +56,7 @@
             <div class="form-row">
                 <div class="form-group full-width">
                     <label for="tanggal_main">Tanggal Main</label>
-                    <input type="date" id="tanggal_main" name="tanggal_main" class="form-control" min="<?= date('Y-m-d') ?>" required>
+                    <input type="date" id="tanggal_main" name="tanggal_main" class="form-control" min="<?= date('Y-m-d') ?>" required value="<?= htmlspecialchars(old('tanggal_main', '')) ?>">
                 </div>
             </div>
             
@@ -66,7 +66,7 @@
                 <div id="time-slots" class="time-slots-grid">
                     <!-- Time slots will be loaded here via JavaScript -->
                 </div>
-                <input type="hidden" id="selected_hours" name="selected_hours" required>
+                <input type="hidden" id="selected_hours" name="selected_hours" required value="<?= htmlspecialchars(old('selected_hours', '')) ?>">
             </div>
             
             <div class="form-group">

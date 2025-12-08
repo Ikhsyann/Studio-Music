@@ -26,7 +26,7 @@
             <form action="/Studio-Music/public/index.php?url=auth/loginProcess" method="POST" class="auth-form">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" required>
+                    <input type="email" id="email" name="email" class="form-control" required value="<?= htmlspecialchars(old('email', '')) ?>">
                 </div>
                 
                 <div class="form-group">

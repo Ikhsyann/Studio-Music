@@ -32,9 +32,10 @@
             <div class="form-group">
                 <label for="metode_pembayaran">Metode Pembayaran <span style="color: red;">*</span></label>
                 <select id="metode_pembayaran" name="metode_pembayaran" class="form-control" required onchange="showPaymentInfo(this.value)">
-                    <option value="">-- Pilih Metode Pembayaran --</option>
-                    <option value="Transfer Bank">Transfer Bank</option>
-                    <option value="E-Wallet">E-Wallet</option>
+                    <?php $oldMethod = old('metode_pembayaran', ''); ?>
+                    <option value="" <?= $oldMethod === '' ? 'selected' : '' ?>>-- Pilih Metode Pembayaran --</option>
+                    <option value="Transfer Bank" <?= $oldMethod === 'Transfer Bank' ? 'selected' : '' ?>>Transfer Bank</option>
+                    <option value="E-Wallet" <?= $oldMethod === 'E-Wallet' ? 'selected' : '' ?>>E-Wallet</option>
                 </select>
             </div>
 
@@ -84,7 +85,7 @@
             
             <div class="form-group">
                 <label for="keterangan">Keterangan (Opsional)</label>
-                <textarea id="keterangan" name="keterangan" class="form-control" rows="3" placeholder="Tambahkan catatan jika ada..."></textarea>
+                <textarea id="keterangan" name="keterangan" class="form-control" rows="3" placeholder="Tambahkan catatan jika ada..."><?= htmlspecialchars(old('keterangan', '')) ?></textarea>
             </div>
             
             <div class="form-actions">

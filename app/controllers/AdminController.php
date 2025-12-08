@@ -122,8 +122,9 @@ class AdminController extends Controller {
         }
 
         try {
+            $id_admin = $_SESSION['admin']['id_admin'];
             $bookingModel = $this->model('Booking');
-            $result = $bookingModel->updateStatus($id_booking, 'Disetujui');
+            $result = $bookingModel->updateStatus($id_booking, 'Disetujui', $id_admin);
             if ($result) {
                 $this->setFlash('success', 'Booking #' . $id_booking . ' berhasil disetujui');
             } else {
@@ -153,8 +154,9 @@ class AdminController extends Controller {
         }
 
         try {
+            $id_admin = $_SESSION['admin']['id_admin'];
             $bookingModel = $this->model('Booking');
-            $result = $bookingModel->updateStatus($id_booking, 'Dibatalkan');
+            $result = $bookingModel->updateStatus($id_booking, 'Dibatalkan', $id_admin);
             if ($result) {
                 $this->setFlash('success', 'Booking #' . $id_booking . ' berhasil ditolak');
             } else {
@@ -174,9 +176,13 @@ class AdminController extends Controller {
         $userModel = $this->model('User');
         $allUsers = $userModel->all();
         
+        $adminModel = $this->model('Admin');
+        $allAdmins = $adminModel->all();
+        
         $data = [
             'admin' => $_SESSION['admin'],
             'users' => $allUsers,
+            'admins' => $allAdmins,
             'title' => 'Manajemen User'
         ];
         
@@ -198,6 +204,27 @@ class AdminController extends Controller {
                 $this->setFlash('success', 'User berhasil dihapus!');
             } else {
                 $this->setFlash('error', 'Gagal menghapus user');
+            }
+            
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+        }
+    }
+    
+    public function deleteAdmin() {
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $id_admin = $_POST['id_admin'] ?? 0;
+            
+            $adminModel = $this->model('Admin');
+            $result = $adminModel->delete($id_admin);
+            
+            if ($result) {
+                $this->setFlash('success', 'Admin berhasil dihapus!');
+            } else {
+                $this->setFlash('error', 'Gagal menghapus admin');
             }
             
             $this->redirect('/Studio-Music/public/index.php?url=admin/users');
@@ -279,15 +306,81 @@ class AdminController extends Controller {
         }
         
         $id_studio = $_POST['id_studio'] ?? null;
+        $redirectToAdd = '/Studio-Music/public/index.php?url=admin/addStudio';
+        $redirectToEdit = $id_studio ? '/Studio-Music/public/index.php?url=admin/editStudio/' . $id_studio : $redirectToAdd;
         $studioData = [
             'nama_studio' => $_POST['nama_studio'] ?? '',
             'deskripsi' => $_POST['deskripsi'] ?? '',
             'harga_per_jam' => $_POST['harga_per_jam'] ?? 0,
             'fasilitas' => $_POST['fasilitas'] ?? '',
             'kapasitas' => $_POST['kapasitas'] ?? 0,
-            'gambar' => $_POST['gambar'] ?? 'default-studio.jpg',
+            // 'gambar' will be set after processing upload
             'status_ketersediaan' => $_POST['status_ketersediaan'] ?? 'Tersedia'
         ];
+
+        // Server-side validation: deskripsi maksimal 150 karakter
+        if (isset($studioData['deskripsi']) && mb_strlen($studioData['deskripsi']) > 150) {
+            $this->setFlash('error', 'Deskripsi tidak boleh lebih dari 150 karakter.');
+            $this->redirect($redirectToEdit);
+            return;
+        }
+
+        // Handle gambar upload (file input name: gambar_file)
+        $uploadDir = __DIR__ . '/../../public/images/';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0775, true);
+        }
+
+        $finalFilename = $_POST['existing_gambar'] ?? 'default-studio.jpg';
+        if (isset($_FILES['gambar_file']) && isset($_FILES['gambar_file']['error']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+            $tmpPath = $_FILES['gambar_file']['tmp_name'];
+            $origName = $_FILES['gambar_file']['name'];
+            $fileExt = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+            $allowed = ['jpg','jpeg','png'];
+
+            if (!in_array($fileExt, $allowed)) {
+                $this->setFlash('error', 'Format file tidak valid. Hanya JPG/JPEG/PNG.');
+                $this->redirect($redirectToEdit);
+                return;
+            }
+
+            if (filesize($tmpPath) > 5 * 1024 * 1024) {
+                $this->setFlash('error', 'Ukuran file terlalu besar (max 5MB)');
+                $this->redirect($redirectToEdit);
+                return;
+            }
+
+            // Create slug from studio name for filename
+            $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower(trim($studioData['nama_studio'])));
+            $slug = trim($slug, '-');
+            if (empty($slug)) {
+                $slug = 'studio';
+            }
+
+            // Ensure unique filename: try slug.ext, if exists append timestamp
+            $candidate = $slug . '.' . $fileExt;
+            $finalPath = $uploadDir . $candidate;
+            if (file_exists($finalPath)) {
+                $candidate = $slug . '_' . time() . '.' . $fileExt;
+                $finalPath = $uploadDir . $candidate;
+            }
+
+            if (!move_uploaded_file($tmpPath, $finalPath)) {
+                $this->setFlash('error', 'Gagal menyimpan file gambar.');
+                $this->redirect($redirectToEdit);
+                return;
+            }
+
+            // if editing and there was an existing image (and not default), delete it
+            if ($id_studio && !empty($_POST['existing_gambar']) && $_POST['existing_gambar'] !== 'default-studio.jpg') {
+                $old = $uploadDir . basename($_POST['existing_gambar']);
+                if (file_exists($old)) @unlink($old);
+            }
+
+            $finalFilename = $candidate;
+        }
+
+        $studioData['gambar'] = $finalFilename;
         
         $studioModel = $this->model('Studio');
         
@@ -325,6 +418,99 @@ class AdminController extends Controller {
         }
         
         $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
+    }
+    
+    public function addUser() {
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+        }
+        
+        $data = [
+            'admin' => $_SESSION['admin'],
+            'title' => 'Tambah User'
+        ];
+        
+        $this->view('admin/user_form', $data);
+    }
+    
+    public function addAdmin() {
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+        }
+        
+        $data = [
+            'admin' => $_SESSION['admin'],
+            'title' => 'Tambah Admin'
+        ];
+        
+        $this->view('admin/admin_form', $data);
+    }
+    
+    public function saveUser() {
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+        }
+        
+        $nama = $_POST['nama'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $no_telp = $_POST['no_telp'] ?? '';
+        
+        if (empty($nama) || empty($email) || empty($password) || empty($no_telp)) {
+            $this->setFlash('error', 'Semua field harus diisi');
+            $this->redirect('/Studio-Music/public/index.php?url=admin/addUser');
+        }
+        
+        $userData = [
+            'nama' => $nama,
+            'email' => $email,
+            'password' => $password,
+            'no_telp' => $no_telp
+        ];
+        
+        $userModel = $this->model('User');
+        $result = $userModel->register($userData);
+        
+        if ($result['success']) {
+            $this->setFlash('success', 'User berhasil ditambahkan');
+        } else {
+            $this->setFlash('error', $result['message'] ?? 'Gagal menambahkan user');
+        }
+        
+        $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+    }
+    
+    public function saveAdmin() {
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('/Studio-Music/public/index.php?url=auth/login');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+        }
+        
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        
+        if (empty($email) || empty($password)) {
+            $this->setFlash('error', 'Email dan password harus diisi');
+            $this->redirect('/Studio-Music/public/index.php?url=admin/addAdmin');
+        }
+        
+        $adminModel = $this->model('Admin');
+        $result = $adminModel->createAdmin($email, $password);
+        
+        if ($result['success']) {
+            $this->setFlash('success', 'Admin berhasil ditambahkan');
+        } else {
+            $this->setFlash('error', $result['message']);
+        }
+        
+        $this->redirect('/Studio-Music/public/index.php?url=admin/users');
     }
 }
 ?>

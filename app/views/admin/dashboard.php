@@ -51,6 +51,7 @@
                             <th>Jam</th>
                             <th>Total</th>
                             <th>Status Booking</th>
+                            <th>Diproses Oleh</th>
                             <th>Bukti Pembayaran</th>
                             <th>Aksi</th>
                         </tr>
@@ -71,6 +72,15 @@
                                     <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $booking['status_booking'])) ?>">
                                         <?= htmlspecialchars($booking['status_booking']) ?>
                                     </span>
+                                </td>
+                                <td>
+                                    <?php if (!empty($booking['admin_email'])): ?>
+                                        <span style="font-size: 12px; color: #666;">
+                                            <?= htmlspecialchars($booking['admin_email']) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if (!empty($booking['bukti_pembayaran'])): ?>
@@ -109,8 +119,10 @@
                 </table>
             </div>
         <?php else: ?>
-            <div class="no-data">
-                <p>Belum ada booking di sistem.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <h3>Belum Ada Booking</h3>
+                <p>Belum ada booking yang masuk. User dapat melakukan booking setelah studio ditambahkan.</p>
             </div>
         <?php endif; ?>
     </div>

@@ -41,11 +41,12 @@ class Admin extends Model {
     
     public function getAllBookings() {
         $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user,
-                  p.bukti_pembayaran
+                  p.bukti_pembayaran, a.email as admin_email
                   FROM booking b
                   JOIN studios s ON b.id_studio = s.id_studio
                   JOIN users u ON b.id_user = u.id_user
                   LEFT JOIN payments p ON b.id_booking = p.id_booking
+                  LEFT JOIN admin a ON b.id_admin = a.id_admin
                   ORDER BY b.created_at DESC";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -57,6 +58,26 @@ class Admin extends Model {
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':id', $id_user, PDO::PARAM_INT);
         return $stmt->execute();
+    }
+    
+    public function createAdmin($email, $password) {
+        $existing = $this->findByEmail($email);
+        if ($existing) {
+            return ['success' => false, 'message' => 'Email sudah digunakan'];
+        }
+        
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+        
+        $query = "INSERT INTO " . $this->table . " (email, password) VALUES (:email, :password)";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $hashedPassword);
+        
+        if ($stmt->execute()) {
+            return ['success' => true, 'message' => 'Admin berhasil dibuat'];
+        }
+        
+        return ['success' => false, 'message' => 'Gagal membuat admin'];
     }
 }
 ?>
