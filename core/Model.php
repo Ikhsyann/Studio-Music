@@ -1,91 +1,72 @@
 <?php
 
+// Base Model Class - Provides ORM-like functionality
 class Model {
-    protected $db;
-    protected $table;
-    protected $primaryKey = 'id';
+    protected $db, $table, $primaryKey = 'id';
     
     public function __construct() {
         require_once __DIR__ . '/../config/Database.php';
-        $database = new Database();
-        $this->db = $database->getConnection();
+        $this->db = (new Database())->getConnection(); // Connect to database
     }
     
+    // Get all records from table
     public function all() {
-        $query = "SELECT * FROM " . $this->table;
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->db->query("SELECT * FROM {$this->table}")->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Find single record by ID
     public function find($id) {
-        $query = "SELECT * FROM " . $this->table . " WHERE " . $this->primaryKey . " = :id LIMIT 1";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = ? LIMIT 1");
+        $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
+    // Insert new record
     public function insert($data) {
         $columns = implode(', ', array_keys($data));
         $placeholders = ':' . implode(', :', array_keys($data));
+        $stmt = $this->db->prepare("INSERT INTO {$this->table} ($columns) VALUES ($placeholders)");
         
-        $query = "INSERT INTO " . $this->table . " ($columns) VALUES ($placeholders)";
-        $stmt = $this->db->prepare($query);
-        
-        foreach ($data as $key => $value) {
-            $stmt->bindValue(":$key", $value);
-        }
-        
+        foreach ($data as $key => $value) $stmt->bindValue(":$key", $value);
         return $stmt->execute();
     }
     
+    // Update existing record
     public function update($id, $data) {
-        $set = '';
-        foreach ($data as $key => $value) {
-            $set .= "$key = :$key, ";
-        }
-        $set = rtrim($set, ', ');
+        $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($data)));
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET $set WHERE {$this->primaryKey} = :id");
         
-        $query = "UPDATE " . $this->table . " SET $set WHERE " . $this->primaryKey . " = :id";
-        $stmt = $this->db->prepare($query);
-        
-        foreach ($data as $key => $value) {
-            $stmt->bindValue(":$key", $value);
-        }
+        foreach ($data as $key => $value) $stmt->bindValue(":$key", $value);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        
         return $stmt->execute();
     }
     
+    // Delete record by ID
     public function delete($id) {
-        $query = "DELETE FROM " . $this->table . " WHERE " . $this->primaryKey . " = :id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE {$this->primaryKey} = ?");
+        return $stmt->execute([$id]);
     }
     
+    // Validate input data against rules
     protected function validate($data, $rules) {
         $errors = [];
+        $validators = [
+            'required' => fn($v) => empty($v) ? "wajib diisi" : null,
+            'email' => fn($v) => !filter_var($v, FILTER_VALIDATE_EMAIL) ? "harus berupa email yang valid" : null,
+            'numeric' => fn($v) => !is_numeric($v) ? "harus berupa angka" : null
+        ];
         
         foreach ($rules as $field => $rule) {
-            if (strpos($rule, 'required') !== false && empty($data[$field])) {
-                $errors[$field] = ucfirst($field) . " wajib diisi";
-            }
-            
-            if (strpos($rule, 'email') !== false && !empty($data[$field])) {
-                if (!filter_var($data[$field], FILTER_VALIDATE_EMAIL)) {
-                    $errors[$field] = ucfirst($field) . " harus berupa email yang valid";
-                }
-            }
-            
-            if (strpos($rule, 'numeric') !== false && !empty($data[$field])) {
-                if (!is_numeric($data[$field])) {
-                    $errors[$field] = ucfirst($field) . " harus berupa angka";
+            $value = $data[$field] ?? '';
+            foreach ($validators as $type => $validator) {
+                if (strpos($rule, $type) !== false && ($type === 'required' || !empty($value))) {
+                    if ($error = $validator($value)) {
+                        $errors[$field] = ucfirst($field) . " $error";
+                        break;
+                    }
                 }
             }
         }
-        
         return $errors;
     }
 }

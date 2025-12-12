@@ -2,174 +2,145 @@
 
 require_once __DIR__ . '/../../core/Model.php';
 
+// Model Booking - Mengelola data pemesanan studio
 class Booking extends Model {
     protected $table = 'booking';
     protected $primaryKey = 'id_booking';
     
+    // Format response untuk return value
+    private function response($success, $messageOrErrors, $extra = []) {
+        return array_merge(['success' => $success], 
+            is_array($messageOrErrors) ? ['errors' => $messageOrErrors] : ['message' => $messageOrErrors],
+            $extra
+        );
+    }
+    
+    // Eksekusi query dengan prepared statement
+    private function executeQuery($query, $params = []) {
+        $stmt = $this->db->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        return $stmt;
+    }
+    
+    // Buat booking baru dengan validasi
+    // Buat booking baru dengan validasi
     public function createBooking($data) {
-        $rules = [
+        $errors = $this->validate($data, [
             'id_user' => 'required|numeric',
             'id_studio' => 'required|numeric',
             'tanggal_main' => 'required',
             'jam_mulai' => 'required',
             'jam_selesai' => 'required',
             'total_bayar' => 'required|numeric'
-        ];
+        ]);
         
-        $errors = $this->validate($data, $rules);
+        if ($errors) return $this->response(false, $errors);
         
-        if (!empty($errors)) {
-            return ['success' => false, 'errors' => $errors];
-        }
-        
+        // Cek apakah studio sudah dibooking
         if ($this->isStudioBooked($data['id_studio'], $data['tanggal_main'], $data['jam_mulai'], $data['jam_selesai'])) {
-            return ['success' => false, 'message' => 'Studio sudah dibooking di waktu tersebut'];
+            return $this->response(false, 'Studio sudah dibooking di waktu tersebut');
         }
         
-        if (!isset($data['status_booking'])) {
-            $data['status_booking'] = 'Menunggu Konfirmasi';
-        }
+        $data['status_booking'] = $data['status_booking'] ?? 'Menunggu Konfirmasi';
         
-        // Do not set `id_admin` here. New bookings should have NULL id_admin until
-        // an admin approves/rejects them. The DB migration will allow NULLs.
-        
-        if ($this->insert($data)) {
-            $id = $this->db->lastInsertId();
-            return ['success' => true, 'message' => 'Booking berhasil dibuat', 'id_booking' => $id];
-        }
-        
-        return ['success' => false, 'message' => 'Gagal membuat booking'];
+        return $this->insert($data) 
+            ? $this->response(true, 'Booking berhasil dibuat', ['id_booking' => $this->db->lastInsertId()])
+            : $this->response(false, 'Gagal membuat booking');
     }
     
+    // Cek apakah studio sudah dibooking pada waktu tersebut
+    // Cek apakah studio sudah dibooking pada waktu tersebut
     public function isStudioBooked($id_studio, $tanggal, $jam_mulai, $jam_selesai) {
-        $query = "SELECT * FROM " . $this->table . " 
-                  WHERE id_studio = :id_studio 
-                  AND tanggal_main = :tanggal 
-                  AND status_booking NOT IN ('Dibatalkan')
-                  AND (
-                      (jam_mulai < :jam_selesai AND jam_selesai > :jam_mulai)
-                  )";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id_studio', $id_studio, PDO::PARAM_INT);
-        $stmt->bindParam(':tanggal', $tanggal);
-        $stmt->bindParam(':jam_mulai', $jam_mulai);
-        $stmt->bindParam(':jam_selesai', $jam_selesai);
-        $stmt->execute();
-        
+        $stmt = $this->executeQuery(
+            "SELECT 1 FROM {$this->table} 
+             WHERE id_studio = :id_studio AND tanggal_main = :tanggal 
+             AND status_booking != 'Dibatalkan'
+             AND jam_mulai < :jam_selesai AND jam_selesai > :jam_mulai",
+            [':id_studio' => $id_studio, ':tanggal' => $tanggal, ':jam_mulai' => $jam_mulai, ':jam_selesai' => $jam_selesai]
+        );
         return $stmt->rowCount() > 0;
     }
     
+    // Ambil daftar jam yang sudah dibooking untuk studio tertentu
     public function getBookedHours($id_studio, $tanggal) {
-        $query = "SELECT jam_mulai, jam_selesai FROM " . $this->table . " 
-                  WHERE id_studio = :id_studio 
-                  AND tanggal_main = :tanggal 
-                  AND status_booking NOT IN ('Dibatalkan')";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id_studio', $id_studio, PDO::PARAM_INT);
-        $stmt->bindParam(':tanggal', $tanggal);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->executeQuery(
+            "SELECT jam_mulai, jam_selesai FROM {$this->table} 
+             WHERE id_studio = :id_studio AND tanggal_main = :tanggal AND status_booking != 'Dibatalkan'",
+            [':id_studio' => $id_studio, ':tanggal' => $tanggal]
+        )->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Ambil semua booking milik user tertentu
+    // Ambil semua booking milik user tertentu
     public function getByUser($id_user) {
-        $query = "SELECT b.*, s.nama_studio, s.harga_per_jam, s.fasilitas
-                  FROM " . $this->table . " b
-                  JOIN studios s ON b.id_studio = s.id_studio
-                  WHERE b.id_user = :id_user
-                  ORDER BY b.created_at DESC";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id_user', $id_user, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->executeQuery(
+            "SELECT b.*, s.nama_studio, s.harga_per_jam, s.fasilitas, b.id_admin
+             FROM {$this->table} b JOIN studios s ON b.id_studio = s.id_studio
+             WHERE b.id_user = :id_user ORDER BY b.created_at DESC",
+            [':id_user' => $id_user]
+        )->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Template query untuk join booking dengan studio, user, dan admin
+    private function getBookingsQuery($where = '') {
+        return "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user, a.email as admin_email
+                FROM {$this->table} b
+                JOIN studios s ON b.id_studio = s.id_studio
+                JOIN users u ON b.id_user = u.id_user
+                LEFT JOIN admin a ON b.id_admin = a.id_admin
+                $where ORDER BY b.created_at DESC";
+    }
+    
+    // Ambil semua booking dengan data lengkap
     public function getAllBookings() {
-        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user,
-                  a.email as admin_email
-                  FROM " . $this->table . " b
-                  JOIN studios s ON b.id_studio = s.id_studio
-                  JOIN users u ON b.id_user = u.id_user
-                  LEFT JOIN admin a ON b.id_admin = a.id_admin
-                  ORDER BY b.created_at DESC";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->executeQuery($this->getBookingsQuery())->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Ambil booking berdasarkan tanggal
+    // Ambil booking berdasarkan tanggal
     public function getByDate($tanggal) {
-        $query = "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user,
-                  a.email as admin_email
-                  FROM " . $this->table . " b
-                  JOIN studios s ON b.id_studio = s.id_studio
-                  JOIN users u ON b.id_user = u.id_user
-                  LEFT JOIN admin a ON b.id_admin = a.id_admin
-                  WHERE b.tanggal_main = :tanggal
-                  ORDER BY b.created_at DESC";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':tanggal', $tanggal);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->executeQuery(
+            $this->getBookingsQuery('WHERE b.tanggal_main = :tanggal'),
+            [':tanggal' => $tanggal]
+        )->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Update status booking (dengan optional admin id)
     public function updateStatus($id_booking, $status, $id_admin = null) {
-        if ($id_admin !== null) {
-            $query = "UPDATE " . $this->table . " 
-                      SET status_booking = :status,
-                          id_admin = :id_admin
-                      WHERE id_booking = :id";
-            
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':status', $status);
-            $stmt->bindParam(':id_admin', $id_admin, PDO::PARAM_INT);
-            $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
-        } else {
-            $query = "UPDATE " . $this->table . " 
-                      SET status_booking = :status 
-                      WHERE id_booking = :id";
-            
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':status', $status);
-            $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
-        }
+        $params = [':status' => $status, ':id' => $id_booking];
+        $set = 'status_booking = :status' . ($id_admin ? ', id_admin = :id_admin' : '');
+        if ($id_admin) $params[':id_admin'] = $id_admin;
         
-        return $stmt->execute();
+        return $this->executeQuery("UPDATE {$this->table} SET $set WHERE id_booking = :id", $params)->rowCount() > 0;
     }
     
+    // Ambil detail booking berdasarkan ID
     public function getById($id_booking) {
-        $query = "SELECT b.*, s.nama_studio, s.harga_per_jam, u.nama as nama_user
-                  FROM " . $this->table . " b
-                  JOIN studios s ON b.id_studio = s.id_studio
-                  JOIN users u ON b.id_user = u.id_user
-                  WHERE b.id_booking = :id
-                  LIMIT 1";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->executeQuery(
+            "SELECT b.*, s.nama_studio, s.harga_per_jam, u.nama as nama_user
+             FROM {$this->table} b
+             JOIN studios s ON b.id_studio = s.id_studio
+             JOIN users u ON b.id_user = u.id_user
+             WHERE b.id_booking = :id LIMIT 1",
+            [':id' => $id_booking]
+        )->fetch(PDO::FETCH_ASSOC);
     }
     
+    // Batalkan booking oleh user
     public function cancelBooking($id_booking, $id_user) {
-        $query = "SELECT * FROM " . $this->table . " WHERE id_booking = :id AND id_user = :id_user LIMIT 1";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id_booking, PDO::PARAM_INT);
-        $stmt->bindParam(':id_user', $id_user, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->executeQuery(
+            "SELECT 1 FROM {$this->table} WHERE id_booking = :id AND id_user = :id_user",
+            [':id' => $id_booking, ':id_user' => $id_user]
+        );
         
-        if ($stmt->rowCount() == 0) {
-            return ['success' => false, 'message' => 'Booking tidak ditemukan'];
-        }
+        if ($stmt->rowCount() == 0) return $this->response(false, 'Booking tidak ditemukan');
         
-        if ($this->updateStatus($id_booking, 'Dibatalkan')) {
-            return ['success' => true, 'message' => 'Booking berhasil dibatalkan'];
-        }
-        
-        return ['success' => false, 'message' => 'Gagal membatalkan booking'];
+        return $this->updateStatus($id_booking, 'Dibatalkan')
+            ? $this->response(true, 'Booking berhasil dibatalkan, Silahkan hubungi admin untuk pengembalian dana. Wa. 085705012504')
+            : $this->response(false, 'Gagal membatalkan booking');
     }
 }
 ?>

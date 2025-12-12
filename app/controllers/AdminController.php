@@ -2,46 +2,37 @@
 
 require_once __DIR__ . '/../../core/Controller.php';
 
+// Controller untuk halaman admin (kelola booking, studio, user)
 class AdminController extends Controller {
     
     public function __construct() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession(); // Pastikan session aktif
     }
     
+    // Validasi apakah user adalah admin
     private function checkAdmin() {
         if (!isset($_SESSION['admin']) || $_SESSION['role'] !== 'admin') {
             $this->redirect('/Studio-Music/public/index.php?url=auth/login');
-            exit;
         }
     }
     
+    // Tampilkan dashboard admin dengan statistik
     public function dashboard() {
         $this->checkAdmin();
         
-        $adminModel = $this->model('Admin');
         $bookingModel = $this->model('Booking');
-        $studioModel = $this->model('Studio');
-        $userModel = $this->model('User');
         
-        $totalBookings = count($bookingModel->all());
-        $totalStudios = count($studioModel->all());
-        $totalUsers = count($userModel->all());
-        $allBookings = $adminModel->getAllBookings();
-        
-        $data = [
+        $this->view('admin/dashboard', [
             'admin' => $_SESSION['admin'],
-            'totalBookings' => $totalBookings,
-            'totalStudios' => $totalStudios,
-            'totalUsers' => $totalUsers,
-            'bookings' => $allBookings,
+            'totalBookings' => count($bookingModel->all()),
+            'totalStudios' => count($this->model('Studio')->all()),
+            'totalUsers' => count($this->model('User')->all()),
+            'bookings' => $this->model('Admin')->getAllBookings(),
             'title' => 'Admin Dashboard'
-        ];
-        
-        $this->view('admin/dashboard', $data);
+        ]);
     }
 
+    // Verifikasi pembayaran: update status payment dan booking
     public function verifyPayment() {
         $this->checkAdmin();
         $id_payment = $_POST['id_payment'] ?? $_GET['id_payment'] ?? null;
@@ -51,17 +42,12 @@ class AdminController extends Controller {
         }
 
         $paymentModel = $this->model('Payment');
-        $bookingModel = $this->model('Booking');
-
-        $payments = $paymentModel->getByStatus('Pending');
         $targetPayment = null;
-        foreach ($payments as $p) {
+        foreach ($paymentModel->getByStatus('Pending') as $p) {
             if ($p['id_payment'] == $id_payment) { $targetPayment = $p; break; }
         }
-        if (!$targetPayment) {
-            $direct = $this->findPaymentById($id_payment);
-            $targetPayment = $direct;
-        }
+        if (!$targetPayment) $targetPayment = $this->findPaymentById($id_payment);
+        
         if (!$targetPayment) {
             $this->setFlash('error', 'Data pembayaran tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
@@ -69,7 +55,7 @@ class AdminController extends Controller {
 
         $result = $paymentModel->verifyPayment($id_payment);
         if ($result['success']) {
-            $bookingModel->updateStatus($targetPayment['id_booking'], 'Disetujui');
+            $this->model('Booking')->updateStatus($targetPayment['id_booking'], 'Disetujui');
             $this->setFlash('success', 'Pembayaran #' . $id_payment . ' diverifikasi, booking disetujui');
         } else {
             $this->setFlash('error', 'Gagal verifikasi pembayaran: ' . $result['message']);
@@ -77,23 +63,21 @@ class AdminController extends Controller {
         $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
     }
 
+    // Tolak pembayaran
     public function rejectPayment() {
         $this->checkAdmin();
-        $id_payment = $_POST['id_payment'] ?? $_GET['id_payment'] ?? null;
-        if (!$id_payment) {
+        if (!($id_payment = $_POST['id_payment'] ?? $_GET['id_payment'] ?? null)) {
             $this->setFlash('error', 'ID pembayaran tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
         }
-        $paymentModel = $this->model('Payment');
-        $result = $paymentModel->rejectPayment($id_payment, 'Ditolak oleh admin');
-        if ($result['success']) {
-            $this->setFlash('success', 'Pembayaran #' . $id_payment . ' ditolak');
-        } else {
-            $this->setFlash('error', 'Gagal menolak pembayaran: ' . $result['message']);
-        }
+        
+        $result = $this->model('Payment')->rejectPayment($id_payment, 'Ditolak oleh admin');
+        $this->setFlash($result['success'] ? 'success' : 'error', 
+                       $result['success'] ? 'Pembayaran #' . $id_payment . ' ditolak' : 'Gagal menolak pembayaran: ' . $result['message']);
         $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
     }
 
+    // Helper: cari payment by ID
     private function findPaymentById($id_payment) {
         require_once __DIR__ . '/../../config/Database.php';
         $database = new Database();
@@ -104,161 +88,105 @@ class AdminController extends Controller {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
+    // Approve booking oleh admin
     public function approveBooking() {
         $this->checkAdmin();
-        $id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null;
-
-        if ($id_booking === null) {
+        if (!($id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null)) {
             $this->setFlash('error', 'ID booking tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
         }
 
         try {
-            $id_admin = $_SESSION['admin']['id_admin'];
-            $bookingModel = $this->model('Booking');
-            $result = $bookingModel->updateStatus($id_booking, 'Disetujui', $id_admin);
-            if ($result) {
-                $this->setFlash('success', 'Booking #' . $id_booking . ' berhasil disetujui');
-            } else {
-                $this->setFlash('error', 'Gagal menyetujui booking #' . $id_booking);
-            }
+            $result = $this->model('Booking')->updateStatus($id_booking, 'Disetujui', $_SESSION['admin']['id_admin']);
+            $this->setFlash($result ? 'success' : 'error', $result ? 'Booking #' . $id_booking . ' berhasil disetujui' : 'Gagal menyetujui booking #' . $id_booking);
         } catch (Exception $e) {
             $this->setFlash('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
         $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
     }
     
+    // Reject booking oleh admin
     public function rejectBooking() {
         $this->checkAdmin();
-        $id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null;
-
-        if ($id_booking === null) {
+        if (!($id_booking = $_POST['id_booking'] ?? $_GET['id_booking'] ?? null)) {
             $this->setFlash('error', 'ID booking tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
         }
 
         try {
-            $id_admin = $_SESSION['admin']['id_admin'];
-            $bookingModel = $this->model('Booking');
-            $result = $bookingModel->updateStatus($id_booking, 'Dibatalkan', $id_admin);
-            if ($result) {
-                $this->setFlash('success', 'Booking #' . $id_booking . ' berhasil ditolak');
-            } else {
-                $this->setFlash('error', 'Gagal menolak booking #' . $id_booking);
-            }
+            $result = $this->model('Booking')->updateStatus($id_booking, 'Dibatalkan', $_SESSION['admin']['id_admin']);
+            $this->setFlash($result ? 'success' : 'error', $result ? 'Booking #' . $id_booking . ' berhasil ditolak' : 'Gagal menolak booking #' . $id_booking);
         } catch (Exception $e) {
             $this->setFlash('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
         $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
     }
     
+    // Tampilkan halaman manajemen user
     public function users() {
         $this->checkAdmin();
-        $userModel = $this->model('User');
-        $allUsers = $userModel->all();
-        
-        $adminModel = $this->model('Admin');
-        $allAdmins = $adminModel->all();
-        
-        $data = [
+        $this->view('admin/users', [
             'admin' => $_SESSION['admin'],
-            'users' => $allUsers,
-            'admins' => $allAdmins,
+            'users' => $this->model('User')->all(),
+            'admins' => $this->model('Admin')->all(),
             'title' => 'Manajemen User'
-        ];
-        
-        $this->view('admin/users', $data);
+        ]);
     }
     
+    // Hapus user
     public function deleteUser() {
         $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $id_user = $_POST['id_user'] ?? 0;
-            
-            $userModel = $this->model('User');
-            $result = $userModel->delete($id_user);
-            
-            if ($result) {
-                $this->setFlash('success', 'User berhasil dihapus!');
-            } else {
-                $this->setFlash('error', 'Gagal menghapus user');
-            }
-            
+            $result = $this->model('User')->delete($_POST['id_user'] ?? 0);
+            $this->setFlash($result ? 'success' : 'error', $result ? 'User berhasil dihapus!' : 'Gagal menghapus user');
             $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         }
     }
     
+    // Hapus admin
     public function deleteAdmin() {
         $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $id_admin = $_POST['id_admin'] ?? 0;
-            
-            $adminModel = $this->model('Admin');
-            $result = $adminModel->delete($id_admin);
-            
-            if ($result) {
-                $this->setFlash('success', 'Admin berhasil dihapus!');
-            } else {
-                $this->setFlash('error', 'Gagal menghapus admin');
-            }
-            
+            $result = $this->model('Admin')->delete($_POST['id_admin'] ?? 0);
+            $this->setFlash($result ? 'success' : 'error', $result ? 'Admin berhasil dihapus!' : 'Gagal menghapus admin');
             $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         }
     }
     
+    // Logout admin
     public function logout() {
         session_destroy();
         $this->redirect('/Studio-Music/public/index.php?url=auth/login');
     }
 
+    // Tampilkan halaman manajemen studio
     public function studios() {
         $this->checkAdmin();
-        $studioModel = $this->model('Studio');
-        $allStudios = $studioModel->all();
-        
-        $data = [
+        $this->view('admin/studios', [
             'admin' => $_SESSION['admin'],
-            'studios' => $allStudios,
+            'studios' => $this->model('Studio')->all(),
             'title' => 'Kelola Studio'
-        ];
-        
-        $this->view('admin/studios', $data);
+        ]);
     }
     
+    // Tampilkan form tambah studio
     public function addStudio() {
         $this->checkAdmin();
-        $data = [
-            'admin' => $_SESSION['admin'],
-            'title' => 'Tambah Studio'
-        ];
-        
-        $this->view('admin/studio_form', $data);
+        $this->view('admin/studio_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah Studio']);
     }
     
+    // Tampilkan form edit studio
     public function editStudio($id_studio = null) {
         $this->checkAdmin();
-        if (!$id_studio) {
-            $this->setFlash('error', 'ID Studio tidak ditemukan');
+        if (!$id_studio || !($studio = $this->model('Studio')->findById($id_studio))) {
+            $this->setFlash('error', $id_studio ? 'Studio tidak ditemukan' : 'ID Studio tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
         }
         
-        $studioModel = $this->model('Studio');
-        $studio = $studioModel->findById($id_studio);
-        
-        if (!$studio) {
-            $this->setFlash('error', 'Studio tidak ditemukan');
-            $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
-        }
-        
-        $data = [
-            'admin' => $_SESSION['admin'],
-            'studio' => $studio,
-            'title' => 'Edit Studio'
-        ];
-        
-        $this->view('admin/studio_form', $data);
+        $this->view('admin/studio_form', ['admin' => $_SESSION['admin'], 'studio' => $studio, 'title' => 'Edit Studio']);
     }
     
+    // Simpan studio (create atau update) dengan upload gambar
     public function saveStudio() {
         $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
@@ -359,6 +287,7 @@ class AdminController extends Controller {
         $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
     }
     
+    // Hapus studio
     public function deleteStudio() {
         $this->checkAdmin();
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
@@ -377,121 +306,68 @@ class AdminController extends Controller {
         $this->redirect('/Studio-Music/public/index.php?url=admin/studios');
     }
     
+    // Tampilkan form tambah user
     public function addUser() {
         $this->checkAdmin();
-        $data = [
-            'admin' => $_SESSION['admin'],
-            'title' => 'Tambah User'
-        ];
-        
-        $this->view('admin/user_form', $data);
+        $this->view('admin/user_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah User']);
     }
     
+    // Tampilkan form tambah admin
     public function addAdmin() {
         $this->checkAdmin();
-        $data = [
-            'admin' => $_SESSION['admin'],
-            'title' => 'Tambah Admin'
-        ];
-        
-        $this->view('admin/admin_form', $data);
+        $this->view('admin/admin_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah Admin']);
     }
     
+    // Simpan user baru
     public function saveUser() {
         $this->checkAdmin();
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
-        }
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         
-        // Remove confirm_password, it's only for client-side validation
         $nama = trim($_POST['nama'] ?? '');
         $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
         $no_telp = trim($_POST['no_telp'] ?? '');
+        $password = $_POST['password'] ?? '';
         
-        // Server-side validation
-        $errors = [];
+        $errors = array_merge(
+            (empty($nama) || strlen($nama) < 3) ? ['Nama minimal 3 karakter'] : [],
+            !preg_match('/^[A-Za-z\s]+$/', $nama) ? ['Nama hanya boleh berisi huruf dan spasi'] : [],
+            !filter_var($email, FILTER_VALIDATE_EMAIL) ? ['Format email tidak valid'] : [],
+            !preg_match('/^[0-9]{10,15}$/', $no_telp) ? ['Nomor telepon harus 10-15 digit angka'] : [],
+            strlen($password) < 6 ? ['Password minimal 6 karakter'] : []
+        );
         
-        if (empty($nama) || strlen($nama) < 3) {
-            $errors[] = 'Nama minimal 3 karakter';
-        }
-        if (!preg_match('/^[A-Za-z\s]+$/', $nama)) {
-            $errors[] = 'Nama hanya boleh berisi huruf dan spasi';
-        }
-        
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Format email tidak valid';
-        }
-        
-        if (!preg_match('/^[0-9]{10,15}$/', $no_telp)) {
-            $errors[] = 'Nomor telepon harus 10-15 digit angka';
-        }
-        
-        if (strlen($password) < 6) {
-            $errors[] = 'Password minimal 6 karakter';
-        }
-        
-        if (!empty($errors)) {
+        if ($errors) {
             $this->setFlash('error', implode(', ', $errors));
             $this->redirect('/Studio-Music/public/index.php?url=admin/addUser');
             return;
         }
         
-        $userData = [
-            'nama' => $nama,
-            'email' => $email,
-            'password' => $password,
-            'no_telp' => $no_telp
-        ];
-        
-        $userModel = $this->model('User');
-        $result = $userModel->register($userData);
-        
-        if ($result['success']) {
-            $this->setFlash('success', 'User berhasil ditambahkan');
-        } else {
-            $this->setFlash('error', $result['message'] ?? 'Gagal menambahkan user');
-        }
-        
+        $result = $this->model('User')->register(['nama' => $nama, 'email' => $email, 'password' => $password, 'no_telp' => $no_telp]);
+        $this->setFlash($result['success'] ? 'success' : 'error', $result['success'] ? 'User berhasil ditambahkan' : ($result['message'] ?? 'Gagal menambahkan user'));
         $this->redirect('/Studio-Music/public/index.php?url=admin/users');
     }
     
+    // Simpan admin baru
     public function saveAdmin() {
         $this->checkAdmin();
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
-        }
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') $this->redirect('/Studio-Music/public/index.php?url=admin/users');
         
-        // Remove confirm_password, it's only for client-side validation
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         
-        // Server-side validation
-        $errors = [];
+        $errors = array_merge(
+            !filter_var($email, FILTER_VALIDATE_EMAIL) ? ['Format email tidak valid'] : [],
+            strlen($password) < 6 ? ['Password minimal 6 karakter'] : []
+        );
         
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Format email tidak valid';
-        }
-        
-        if (strlen($password) < 6) {
-            $errors[] = 'Password minimal 6 karakter';
-        }
-        
-        if (!empty($errors)) {
+        if ($errors) {
             $this->setFlash('error', implode(', ', $errors));
             $this->redirect('/Studio-Music/public/index.php?url=admin/addAdmin');
             return;
         }
         
-        $adminModel = $this->model('Admin');
-        $result = $adminModel->createAdmin($email, $password);
-        
-        if ($result['success']) {
-            $this->setFlash('success', 'Admin berhasil ditambahkan');
-        } else {
-            $this->setFlash('error', $result['message']);
-        }
-        
+        $result = $this->model('Admin')->createAdmin($email, $password);
+        $this->setFlash($result['success'] ? 'success' : 'error', $result['success'] ? 'Admin berhasil ditambahkan' : $result['message']);
         $this->redirect('/Studio-Music/public/index.php?url=admin/users');
     }
 }

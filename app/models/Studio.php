@@ -2,105 +2,88 @@
 
 require_once __DIR__ . '/../../core/Model.php';
 
+// Model Studio - Mengelola data studio musik
 class Studio extends Model {
     protected $table = 'studios';
     protected $primaryKey = 'id_studio';
     
+    // Format response untuk return value
+    private function response($success, $messageOrErrors) {
+        return array_merge(['success' => $success], 
+            is_array($messageOrErrors) ? ['errors' => $messageOrErrors] : ['message' => $messageOrErrors]
+        );
+    }
+    
+    // Ambil studio yang tersedia
     public function getAvailable() {
-        $query = "SELECT * FROM " . $this->table . " WHERE status_ketersediaan = 'Tersedia' ORDER BY nama_studio ASC";
-        $stmt = $this->db->prepare($query);
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE status_ketersediaan = 'Tersedia' ORDER BY nama_studio");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Cari studio berdasarkan keyword
     public function search($keyword) {
-        $query = "SELECT * FROM " . $this->table . " 
-                  WHERE (nama_studio LIKE :keyword OR deskripsi LIKE :keyword OR fasilitas LIKE :keyword)
-                  AND status_ketersediaan = 'Tersedia'
-                  ORDER BY nama_studio ASC";
-        $stmt = $this->db->prepare($query);
-        $keyword = "%$keyword%";
-        $stmt->bindParam(':keyword', $keyword);
-        $stmt->execute();
+        $stmt = $this->db->prepare(
+            "SELECT * FROM {$this->table} 
+             WHERE (nama_studio LIKE ? OR deskripsi LIKE ? OR fasilitas LIKE ?)
+             AND status_ketersediaan = 'Tersedia' ORDER BY nama_studio"
+        );
+        $kw = "%$keyword%";
+        $stmt->execute([$kw, $kw, $kw]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    // Buat studio baru dengan validasi
     public function createStudio($data) {
-        $rules = [
+        $errors = $this->validate($data, [
             'nama_studio' => 'required',
             'harga_per_jam' => 'required|numeric',
             'kapasitas' => 'numeric'
-        ];
+        ]);
         
-        $errors = $this->validate($data, $rules);
+        if ($errors) return $this->response(false, $errors);
         
-        if (!empty($errors)) {
-            return ['success' => false, 'errors' => $errors];
-        }
+        $data['status_ketersediaan'] = $data['status_ketersediaan'] ?? 'Tersedia';
         
-        if (!isset($data['status_ketersediaan'])) {
-            $data['status_ketersediaan'] = 'Tersedia';
-        }
-        
-        if ($this->insert($data)) {
-            return ['success' => true, 'message' => 'Studio berhasil ditambahkan'];
-        }
-        
-        return ['success' => false, 'message' => 'Gagal menambahkan studio'];
+        return $this->insert($data)
+            ? $this->response(true, 'Studio berhasil ditambahkan')
+            : $this->response(false, 'Gagal menambahkan studio');
     }
     
+    // Update data studio
     public function updateStudio($id_studio, $data) {
-        $rules = [
+        $errors = $this->validate($data, [
             'nama_studio' => 'required',
             'harga_per_jam' => 'required|numeric',
             'kapasitas' => 'numeric'
-        ];
+        ]);
         
-        $errors = $this->validate($data, $rules);
+        if ($errors) return $this->response(false, $errors);
         
-        if (!empty($errors)) {
-            return ['success' => false, 'errors' => $errors];
-        }
+        $stmt = $this->db->prepare(
+            "UPDATE {$this->table} 
+             SET nama_studio = ?, deskripsi = ?, harga_per_jam = ?, fasilitas = ?, 
+                 kapasitas = ?, gambar = ?, status_ketersediaan = ?
+             WHERE id_studio = ?"
+        );
         
-        $query = "UPDATE " . $this->table . " 
-                  SET nama_studio = :nama_studio, 
-                      deskripsi = :deskripsi,
-                      harga_per_jam = :harga_per_jam,
-                      fasilitas = :fasilitas,
-                      kapasitas = :kapasitas,
-                      gambar = :gambar,
-                      status_ketersediaan = :status_ketersediaan
-                  WHERE id_studio = :id";
-        
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':nama_studio', $data['nama_studio']);
-        $stmt->bindParam(':deskripsi', $data['deskripsi']);
-        $stmt->bindParam(':harga_per_jam', $data['harga_per_jam']);
-        $stmt->bindParam(':fasilitas', $data['fasilitas']);
-        $stmt->bindParam(':kapasitas', $data['kapasitas']);
-        $stmt->bindParam(':gambar', $data['gambar']);
-        $stmt->bindParam(':status_ketersediaan', $data['status_ketersediaan']);
-        $stmt->bindParam(':id', $id_studio, PDO::PARAM_INT);
-        
-        if ($stmt->execute()) {
-            return ['success' => true, 'message' => 'Studio berhasil diupdate'];
-        }
-        
-        return ['success' => false, 'message' => 'Gagal mengupdate studio'];
+        return $stmt->execute([
+            $data['nama_studio'], $data['deskripsi'], $data['harga_per_jam'], $data['fasilitas'],
+            $data['kapasitas'], $data['gambar'], $data['status_ketersediaan'], $id_studio
+        ]) ? $this->response(true, 'Studio berhasil diupdate') 
+           : $this->response(false, 'Gagal mengupdate studio');
     }
     
+    // Hapus studio berdasarkan ID
     public function deleteStudio($id_studio) {
-        $query = "DELETE FROM " . $this->table . " WHERE id_studio = :id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id_studio, PDO::PARAM_INT);
-        return $stmt->execute();
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id_studio = ?");
+        return $stmt->execute([$id_studio]);
     }
     
+    // Cari studio berdasarkan ID
     public function findById($id_studio) {
-        $query = "SELECT * FROM " . $this->table . " WHERE id_studio = :id LIMIT 1";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id_studio, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id_studio = ? LIMIT 1");
+        $stmt->execute([$id_studio]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

@@ -97,6 +97,7 @@ body {
     font-size: 48px;
     background: linear-gradient(135deg, #5BA3F5 0%, #7CB8F7 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 15px;
     font-family: 'Playfair Display', serif;

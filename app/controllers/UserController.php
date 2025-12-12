@@ -2,99 +2,67 @@
 
 require_once __DIR__ . '/../../core/Controller.php';
 
+// Controller untuk halaman user (booking, payment, riwayat)
 class UserController extends Controller {
     
     public function __construct() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        if (!isset($_SESSION['user'])) {
-            header('Location: /Studio-Music/public/index.php?url=auth/login');
-            exit;
-        }
+        $this->ensureSession();
+        // Redirect jika belum login
+        if (!isset($_SESSION['user'])) $this->redirect('/Studio-Music/public/index.php?url=auth/login');
     }
     
+    // Tampilkan dashboard user dengan daftar studio
     public function dashboard() {
-        $studioModel = $this->model('Studio');
-        $studios = $studioModel->getAvailable();
-        
-        $data = [
+        $this->view('user/dashboard', [
             'user' => $_SESSION['user'],
-            'studios' => $studios,
+            'studios' => $this->model('Studio')->getAvailable(),
             'title' => 'Dashboard - Studio Musik'
-        ];
-        
-        $this->view('user/dashboard', $data);
+        ]);
     }
     
+    // Tampilkan riwayat booking user
     public function riwayat() {
-        $bookingModel = $this->model('Booking');
         $paymentModel = $this->model('Payment');
+        $bookings = $this->model('Booking')->getByUser($_SESSION['user']['id_user']);
         
-        $bookings = $bookingModel->getByUser($_SESSION['user']['id_user']);
-        
+        // Ambil data payment untuk setiap booking
         foreach ($bookings as &$booking) {
-            $payments = $paymentModel->getByBooking($booking['id_booking']);
-            $booking['payment'] = $payments[0] ?? null;
+            $booking['payment'] = $paymentModel->getByBooking($booking['id_booking'])[0] ?? null;
         }
         
-        $data = [
-            'user' => $_SESSION['user'],
-            'bookings' => $bookings,
-            'title' => 'Riwayat Booking'
-        ];
-        
-        $this->view('user/riwayat', $data);
+        $this->view('user/riwayat', ['user' => $_SESSION['user'], 'bookings' => $bookings, 'title' => 'Riwayat Booking']);
     }
     
+    // Tampilkan status booking (semua user atau filter by tanggal)
     public function statusBooking() {
         $bookingModel = $this->model('Booking');
-        
         $tanggal = $_GET['tanggal'] ?? null;
         
-        if ($tanggal) {
-            $allBookings = $bookingModel->getByDate($tanggal);
-        } else {
-            $allBookings = $bookingModel->getAllBookings();
-        }
-        
-        $data = [
+        $this->view('user/status_booking', [
             'user' => $_SESSION['user'],
-            'bookings' => $allBookings,
+            'bookings' => $tanggal ? $bookingModel->getByDate($tanggal) : $bookingModel->getAllBookings(),
             'title' => 'Status Booking - Jadwal Studio'
-        ];
-        
-        $this->view('user/status_booking', $data);
+        ]);
     }
     
+    // Tampilkan form booking untuk studio tertentu
     public function booking($id_studio = null) {
-        if (!$id_studio) {
+        if (!$id_studio || !($studio = $this->model('Studio')->findById($id_studio))) {
             $this->setFlash('error', 'Studio tidak ditemukan');
             $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
         }
         
-        $studioModel = $this->model('Studio');
-        $studio = $studioModel->findById($id_studio);
-        
-        if (!$studio) {
-            $this->setFlash('error', 'Studio tidak ditemukan');
-            $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
-        }
-        
-        $data = [
+        $this->view('user/booking_form', [
             'user' => $_SESSION['user'],
             'studio' => $studio,
             'title' => 'Form Booking - ' . $studio['nama_studio']
-        ];
-        
-        $this->view('user/booking_form', $data);
+        ]);
     }
     
+    // Proses booking: validasi input dan simpan ke session sementara
     public function bookingProcess() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id_studio = $_POST['id_studio'] ?? '';
-            $tanggal_main = $_POST['tanggal_main'] ?? '';
             $selected_hours = json_decode($_POST['selected_hours'] ?? '[]', true);
             
             if (empty($selected_hours)) {
@@ -103,33 +71,22 @@ class UserController extends Controller {
                 return;
             }
             
-            sort($selected_hours);
-            $jam_mulai = $selected_hours[0];
-            $jam_selesai = end($selected_hours) + 1;
-            
-
-            $jam_mulai_str = sprintf('%02d:00:00', $jam_mulai);
-            $jam_selesai_str = sprintf('%02d:00:00', $jam_selesai);
-            
-            $studioModel = $this->model('Studio');
-            $studio = $studioModel->findById($id_studio);
-            
-            if (!$studio) {
+            if (!($studio = $this->model('Studio')->findById($id_studio))) {
                 $this->setFlash('error', 'Studio tidak ditemukan');
                 $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
                 return;
             }
             
+            sort($selected_hours);
             $durasi = count($selected_hours);
-            $total_bayar = $durasi * $studio['harga_per_jam'];
             
             $_SESSION['booking_temp'] = [
                 'id_user' => $_SESSION['user']['id_user'],
                 'id_studio' => $id_studio,
-                'tanggal_main' => $tanggal_main,
-                'jam_mulai' => $jam_mulai_str,
-                'jam_selesai' => $jam_selesai_str,
-                'total_bayar' => $total_bayar,
+                'tanggal_main' => $_POST['tanggal_main'] ?? '',
+                'jam_mulai' => sprintf('%02d:00:00', $selected_hours[0]),
+                'jam_selesai' => sprintf('%02d:00:00', end($selected_hours) + 1),
+                'total_bayar' => $durasi * $studio['harga_per_jam'],
                 'nama_studio' => $studio['nama_studio'],
                 'durasi' => $durasi
             ];
@@ -138,38 +95,28 @@ class UserController extends Controller {
         }
     }
     
+    // AJAX: Ambil jam yang sudah dibooking untuk studio tertentu
     public function getBookedHours() {
         header('Content-Type: application/json');
-        
         $id_studio = $_GET['id_studio'] ?? 0;
         $tanggal = $_GET['tanggal'] ?? '';
         
-        if (!$id_studio || !$tanggal) {
-            echo json_encode([]);
-            return;
-        }
-        
-        $bookingModel = $this->model('Booking');
-        $bookedHours = $bookingModel->getBookedHours($id_studio, $tanggal);
-        
-        echo json_encode($bookedHours);
+        echo json_encode(($id_studio && $tanggal) ? $this->model('Booking')->getBookedHours($id_studio, $tanggal) : []);
         exit;
     }
     
+    // Tampilkan form pembayaran (dari session sementara)
     public function payment() {
-        if (!isset($_SESSION['booking_temp'])) {
-            $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
-        }
+        if (!isset($_SESSION['booking_temp'])) $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
         
-        $data = [
+        $this->view('user/payment_form', [
             'user' => $_SESSION['user'],
             'booking' => $_SESSION['booking_temp'],
             'title' => 'Form Pembayaran'
-        ];
-        
-        $this->view('user/payment_form', $data);
+        ]);
     }
     
+    // Proses pembayaran: buat booking dan upload bukti bayar
     public function paymentProcess() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_SESSION['booking_temp'])) {
@@ -178,10 +125,7 @@ class UserController extends Controller {
             }
 
             $bookingTemp = $_SESSION['booking_temp'];
-            $jumlah_bayar = $_POST['jumlah_bayar'] ?? $bookingTemp['total_bayar'];
-            $metode_pembayaran = $_POST['metode_pembayaran'] ?? 'Transfer Bank';
-            $keterangan = $_POST['keterangan'] ?? '';
-
+            
             if (!isset($_FILES['bukti_pembayaran'])) {
                 $this->setFlash('error', 'Form tidak mengirim file. Silakan coba lagi.');
                 $this->redirect('/Studio-Music/public/index.php?url=user/payment');
@@ -190,35 +134,22 @@ class UserController extends Controller {
 
             $fileError = $_FILES['bukti_pembayaran']['error'];
             if ($fileError !== UPLOAD_ERR_OK) {
-                $messages = [
-                    UPLOAD_ERR_INI_SIZE => 'File melebihi batas upload server.',
-                    UPLOAD_ERR_FORM_SIZE => 'File melebihi batas ukuran form.',
-                    UPLOAD_ERR_PARTIAL => 'File hanya ter-upload sebagian.',
-                    UPLOAD_ERR_NO_FILE => 'Tidak ada file yang diupload.',
-                    UPLOAD_ERR_NO_TMP_DIR => 'Folder tmp server hilang.',
-                    UPLOAD_ERR_CANT_WRITE => 'Server gagal menulis file ke disk.',
-                    UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh ekstensi PHP.'
-                ];
-                $this->setFlash('error', 'Gagal upload file: ' . ($messages[$fileError] ?? 'Error tidak diketahui') );
+                $errors = [UPLOAD_ERR_INI_SIZE => 'File melebihi batas upload server.', UPLOAD_ERR_FORM_SIZE => 'File melebihi batas ukuran form.',
+                           UPLOAD_ERR_PARTIAL => 'File hanya ter-upload sebagian.', UPLOAD_ERR_NO_FILE => 'Tidak ada file yang diupload.',
+                           UPLOAD_ERR_NO_TMP_DIR => 'Folder tmp server hilang.', UPLOAD_ERR_CANT_WRITE => 'Server gagal menulis file ke disk.',
+                           UPLOAD_ERR_EXTENSION => 'Upload dihentikan oleh ekstensi PHP.'];
+                $this->setFlash('error', 'Gagal upload file: ' . ($errors[$fileError] ?? 'Error tidak diketahui'));
                 $this->redirect('/Studio-Music/public/index.php?url=user/payment');
                 return;
             }
 
             $upload_dir = __DIR__ . '/../../public/images/payments/';
-            if (!is_dir($upload_dir)) {
-                @mkdir($upload_dir, 0775, true);
-            }
-            if (is_dir($upload_dir) && !is_writable($upload_dir)) {
-                @chmod($upload_dir, 0775);
-            }
-            if (is_dir($upload_dir) && !is_writable($upload_dir)) {
-                @chmod($upload_dir, 0777);
-            }
+            if (!is_dir($upload_dir)) @mkdir($upload_dir, 0775, true);
+            if (is_dir($upload_dir) && !is_writable($upload_dir)) @chmod($upload_dir, 0775) || @chmod($upload_dir, 0777);
+            
             if (!is_dir($upload_dir) || !is_writable($upload_dir)) {
                 $perms = is_dir($upload_dir) ? substr(sprintf('%o', fileperms($upload_dir)), -4) : 'N/A';
-                $hint = 'sudo mkdir -p ' . $upload_dir . ' && sudo chown -R apache:apache ' . $upload_dir . ' && sudo chmod -R 775 ' . $upload_dir;
-                $selinuxHint = ' (Jika SELinux aktif: sudo chcon -R -t httpd_sys_rw_content_t ' . $upload_dir . ')';
-                $this->setFlash('error', 'Folder upload tidak bisa ditulisi (perms: ' . $perms . '). Jalankan: ' . $hint . $selinuxHint);
+                $this->setFlash('error', 'Folder upload tidak bisa ditulisi (perms: ' . $perms . '). Jalankan: sudo mkdir -p ' . $upload_dir . ' && sudo chown -R apache:apache ' . $upload_dir . ' && sudo chmod -R 775 ' . $upload_dir . ' (Jika SELinux aktif: sudo chcon -R -t httpd_sys_rw_content_t ' . $upload_dir . ')');
                 $this->redirect('/Studio-Music/public/index.php?url=user/payment');
                 return;
             }
@@ -243,34 +174,18 @@ class UserController extends Controller {
                 return;
             }
 
-            $bookingData = [
-                'id_user' => $bookingTemp['id_user'],
-                'id_studio' => $bookingTemp['id_studio'],
-                'tanggal_main' => $bookingTemp['tanggal_main'],
-                'jam_mulai' => $bookingTemp['jam_mulai'],
-                'jam_selesai' => $bookingTemp['jam_selesai'],
-                'total_bayar' => $bookingTemp['total_bayar'],
-                'status_booking' => 'Menunggu Konfirmasi'
-            ];
             $bookingModel = $this->model('Booking');
-            $bookingResult = $bookingModel->createBooking($bookingData);
-            if (!$bookingResult['success']) {
-                if (file_exists($tempPath)) {
-                    unlink($tempPath);
-                }
+            $bookingResult = $bookingModel->createBooking([
+                'id_user' => $bookingTemp['id_user'], 'id_studio' => $bookingTemp['id_studio'],
+                'tanggal_main' => $bookingTemp['tanggal_main'], 'jam_mulai' => $bookingTemp['jam_mulai'],
+                'jam_selesai' => $bookingTemp['jam_selesai'], 'total_bayar' => $bookingTemp['total_bayar'],
+                'status_booking' => 'Menunggu Konfirmasi'
+            ]);
+            
+            if (!$bookingResult['success'] || !($id_booking = $bookingResult['id_booking'] ?? null)) {
+                if (file_exists($tempPath)) unlink($tempPath);
                 unset($_SESSION['booking_temp']);
-                $this->setFlash('error', 'Gagal membuat booking: ' . $bookingResult['message']);
-                $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
-                return;
-            }
-
-            $id_booking = $bookingResult['id_booking'] ?? null;
-            if (!$id_booking) {
-                if (file_exists($tempPath)) {
-                    unlink($tempPath);
-                }
-                unset($_SESSION['booking_temp']);
-                $this->setFlash('error', 'Tidak dapat menentukan ID booking. Silakan coba lagi.');
+                $this->setFlash('error', $bookingResult['success'] ? 'Tidak dapat menentukan ID booking. Silakan coba lagi.' : 'Gagal membuat booking: ' . $bookingResult['message']);
                 $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
                 return;
             }
@@ -282,20 +197,17 @@ class UserController extends Controller {
                 $finalPath = $tempPath;
             }
 
-            $paymentData = [
+            $paymentResult = $this->model('Payment')->createPayment([
                 'id_booking' => $id_booking,
-                'jumlah_bayar' => $jumlah_bayar,
-                'metode_pembayaran' => $metode_pembayaran,
+                'jumlah_bayar' => $_POST['jumlah_bayar'] ?? $bookingTemp['total_bayar'],
+                'metode_pembayaran' => $_POST['metode_pembayaran'] ?? 'Transfer Bank',
                 'bukti_pembayaran' => $finalFilename,
-                'keterangan' => $keterangan
-            ];
-            $paymentModel = $this->model('Payment');
-            $paymentResult = $paymentModel->createPayment($paymentData);
+                'keterangan' => $_POST['keterangan'] ?? ''
+            ]);
+            
             if (!$paymentResult['success']) {
                 $bookingModel->delete($id_booking);
-                if (file_exists($finalPath)) {
-                    unlink($finalPath);
-                }
+                if (file_exists($finalPath)) unlink($finalPath);
                 unset($_SESSION['booking_temp']);
                 $this->setFlash('error', 'Gagal menyimpan data pembayaran. Booking dibatalkan.');
                 $this->redirect('/Studio-Music/public/index.php?url=user/dashboard');
@@ -308,19 +220,11 @@ class UserController extends Controller {
         }
     }
     
+    // Batalkan booking oleh user
     public function cancelBooking() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $id_booking = $_POST['id_booking'] ?? 0;
-            
-            $bookingModel = $this->model('Booking');
-            $result = $bookingModel->cancelBooking($id_booking, $_SESSION['user']['id_user']);
-            
-            if ($result['success']) {
-                $this->setFlash('success', $result['message']);
-            } else {
-                $this->setFlash('error', $result['message']);
-            }
-            
+            $result = $this->model('Booking')->cancelBooking($_POST['id_booking'] ?? 0, $_SESSION['user']['id_user']);
+            $this->setFlash($result['success'] ? 'success' : 'error', $result['message']);
             $this->redirect('/Studio-Music/public/index.php?url=user/riwayat');
         }
     }

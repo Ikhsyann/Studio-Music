@@ -31,7 +31,6 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Studio</th>
-                            <th>Nama User</th>
                             <th>Tanggal</th>
                             <th>Jam</th>
                             <th>Durasi</th>
@@ -45,7 +44,6 @@
                             <tr>
                                 <td><?= $no++ ?></td>
                                 <td><strong><?= htmlspecialchars($booking['nama_studio']) ?></strong></td>
-                                <td><?= htmlspecialchars($booking['nama_user']) ?></td>
                                 <td><?= date('d F Y', strtotime($booking['tanggal_main'])) ?></td>
                                 <td><?= date('H:i', strtotime($booking['jam_mulai'])) ?> - <?= date('H:i', strtotime($booking['jam_selesai'])) ?></td>
                                 <td>

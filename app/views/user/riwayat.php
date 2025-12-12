@@ -19,6 +19,7 @@
                             <th>Jam</th>
                             <th>Total Bayar</th>
                             <th>Status Booking</th>
+                            <th>Diproses Oleh</th>
                             <th>Bukti Bayar</th>
                             <th>Aksi</th>
                         </tr>
@@ -37,6 +38,17 @@
                                     <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $booking['status_booking'])) ?>">
                                         <?= htmlspecialchars($booking['status_booking']) ?>
                                     </span>
+                                </td>
+                                <td>
+                                    <?php 
+                                    if ($booking['status_booking'] == 'Menunggu Konfirmasi') {
+                                        echo '<span class="text-muted">-</span>';
+                                    } elseif (!empty($booking['id_admin'])) {
+                                        echo '<span class="badge-admin">Admin</span>';
+                                    } else {
+                                        echo '<span class="badge-user">User</span>';
+                                    }
+                                    ?>
                                 </td>
                                 <td>
                                     <?php if (isset($booking['payment']) && !empty($booking['payment']['bukti_pembayaran'])): ?>
