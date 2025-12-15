@@ -94,7 +94,7 @@
     let selectedSlots = [];
     let bookedHours = [];
     
-    // Generate time slots from 10:00 to 21:00
+    // Generate slot waktu dari 10:00 sampai 21:00
     const availableHours = [];
     for (let i = 10; i <= 21; i++) {
         availableHours.push(i);
@@ -110,7 +110,7 @@
             timeSlot.textContent = `${hour.toString().padStart(2, '0')}:00`;
             timeSlot.dataset.hour = hour;
             
-            // Check if this hour is booked
+            // Cek apakah jam ini sudah dibooking
             const isBooked = bookedHours.some(booked => {
                 const bookedStart = parseInt(booked.start);
                 const bookedEnd = parseInt(booked.end);
@@ -175,17 +175,17 @@
             updateTotal();
             updateHiddenInput();
         } catch (error) {
-            console.error('Error loading booked hours:', error);
+            console.error('Error saat memuat jam yang sudah dibooking:', error);
             renderTimeSlots();
         }
     }
     
     tanggalInput.addEventListener('change', loadBookedHours);
     
-    // Initial render
+    // Render awal
     renderTimeSlots();
     
-    // Form validation
+    // Validasi form
     document.querySelector('.booking-form').addEventListener('submit', function(e) {
         if (selectedSlots.length === 0) {
             e.preventDefault();

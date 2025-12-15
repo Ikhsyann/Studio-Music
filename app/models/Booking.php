@@ -26,7 +26,6 @@ class Booking extends Model {
     }
     
     // Buat booking baru dengan validasi
-    // Buat booking baru dengan validasi
     public function createBooking($data) {
         $errors = $this->validate($data, [
             'id_user' => 'required|numeric',
@@ -52,7 +51,6 @@ class Booking extends Model {
     }
     
     // Cek apakah studio sudah dibooking pada waktu tersebut
-    // Cek apakah studio sudah dibooking pada waktu tersebut
     public function isStudioBooked($id_studio, $tanggal, $jam_mulai, $jam_selesai) {
         $stmt = $this->executeQuery(
             "SELECT 1 FROM {$this->table} 
@@ -73,7 +71,6 @@ class Booking extends Model {
         )->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // Ambil semua booking milik user tertentu
     // Ambil semua booking milik user tertentu
     public function getByUser($id_user) {
         return $this->executeQuery(
@@ -100,7 +97,6 @@ class Booking extends Model {
     }
     
     // Ambil booking berdasarkan tanggal
-    // Ambil booking berdasarkan tanggal
     public function getByDate($tanggal) {
         return $this->executeQuery(
             $this->getBookingsQuery('WHERE b.tanggal_main = :tanggal'),
@@ -108,7 +104,7 @@ class Booking extends Model {
         )->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // Update status booking (dengan optional admin id)
+    // Update status booking (dengan admin id opsional)
     public function updateStatus($id_booking, $status, $id_admin = null) {
         $params = [':status' => $status, ':id' => $id_booking];
         $set = 'status_booking = :status' . ($id_admin ? ', id_admin = :id_admin' : '');

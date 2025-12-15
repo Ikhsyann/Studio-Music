@@ -1,27 +1,27 @@
 <?php
 
-// Base Model Class - Provides ORM-like functionality
+// Kelas Model Dasar - Menyediakan fungsionalitas seperti ORM
 class Model {
     protected $db, $table, $primaryKey = 'id';
     
     public function __construct() {
         require_once __DIR__ . '/../config/Database.php';
-        $this->db = (new Database())->getConnection(); // Connect to database
+        $this->db = (new Database())->getConnection(); // Koneksi ke database
     }
     
-    // Get all records from table
+    // Ambil semua record dari tabel
     public function all() {
         return $this->db->query("SELECT * FROM {$this->table}")->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // Find single record by ID
+    // Cari single record berdasarkan ID
     public function find($id) {
         $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = ? LIMIT 1");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
-    // Insert new record
+    // Insert record baru
     public function insert($data) {
         $columns = implode(', ', array_keys($data));
         $placeholders = ':' . implode(', :', array_keys($data));
@@ -31,7 +31,7 @@ class Model {
         return $stmt->execute();
     }
     
-    // Update existing record
+    // Update record yang ada
     public function update($id, $data) {
         $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($data)));
         $stmt = $this->db->prepare("UPDATE {$this->table} SET $set WHERE {$this->primaryKey} = :id");
@@ -41,13 +41,13 @@ class Model {
         return $stmt->execute();
     }
     
-    // Delete record by ID
+    // Hapus record berdasarkan ID
     public function delete($id) {
         $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE {$this->primaryKey} = ?");
         return $stmt->execute([$id]);
     }
     
-    // Validate input data against rules
+    // Validasi input data sesuai rules
     protected function validate($data, $rules) {
         $errors = [];
         $validators = [

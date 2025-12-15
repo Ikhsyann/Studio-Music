@@ -77,7 +77,7 @@ class AdminController extends Controller {
         $this->redirect('/Studio-Music/public/index.php?url=admin/dashboard');
     }
 
-    // Helper: cari payment by ID
+    // Helper: cari payment berdasarkan ID
     private function findPaymentById($id_payment) {
         require_once __DIR__ . '/../../config/Database.php';
         $database = new Database();
@@ -206,14 +206,14 @@ class AdminController extends Controller {
             'status_ketersediaan' => $_POST['status_ketersediaan'] ?? 'Tersedia'
         ];
 
-        // Server-side validation: deskripsi maksimal 150 karakter
+        // Validasi server-side: deskripsi maksimal 150 karakter
         if (isset($studioData['deskripsi']) && mb_strlen($studioData['deskripsi']) > 150) {
             $this->setFlash('error', 'Deskripsi tidak boleh lebih dari 150 karakter.');
             $this->redirect($redirectToEdit);
             return;
         }
 
-        // Handle gambar upload (file input name: gambar_file)
+        // Tangani upload gambar (nama file input: gambar_file)
         $uploadDir = __DIR__ . '/../../public/images/';
         if (!is_dir($uploadDir)) {
             @mkdir($uploadDir, 0775, true);
@@ -238,14 +238,14 @@ class AdminController extends Controller {
                 return;
             }
 
-            // Create slug from studio name for filename
+            // Buat slug dari nama studio untuk nama file
             $slug = preg_replace('/[^a-z0-9]+/', '-', strtolower(trim($studioData['nama_studio'])));
             $slug = trim($slug, '-');
             if (empty($slug)) {
                 $slug = 'studio';
             }
 
-            // Ensure unique filename: try slug.ext, if exists append timestamp
+            // Pastikan nama file unik: coba slug.ext, jika ada tambahkan timestamp
             $candidate = $slug . '.' . $fileExt;
             $finalPath = $uploadDir . $candidate;
             if (file_exists($finalPath)) {
@@ -259,7 +259,7 @@ class AdminController extends Controller {
                 return;
             }
 
-            // if editing and there was an existing image (and not default), delete it
+            // jika edit dan ada gambar sebelumnya (dan bukan default), hapus gambar lama
             if ($id_studio && !empty($_POST['existing_gambar']) && $_POST['existing_gambar'] !== 'default-studio.jpg') {
                 $old = $uploadDir . basename($_POST['existing_gambar']);
                 if (file_exists($old)) @unlink($old);

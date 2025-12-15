@@ -1,7 +1,7 @@
 <?php
 
 // Jangan start session di sini, biar controller yang handle
-// session_start(); // REMOVED - Controller will handle this
+// session_start(); // DIHAPUS - Controller yang akan menangani ini
 
 require_once '../core/Controller.php';
 require_once '../core/Model.php';
@@ -27,10 +27,10 @@ if (file_exists($controllerFile)) {
         call_user_func_array([$controller, $method], $params);
     } else {
         http_response_code(404);
-        echo "404 - Method not found: " . $method;
+        echo "404 - Method tidak ditemukan: " . $method;
     }
 } else {
     http_response_code(404);
-    echo "404 - Controller not found: " . $controllerName;
+    echo "404 - Controller tidak ditemukan: " . $controllerName;
 }
 ?>

@@ -80,7 +80,7 @@
         const email = document.getElementById('email').value;
         const noTelp = document.getElementById('no_telp').value;
         
-        // Validate name
+        // Validasi nama
         if (!/^[A-Za-z\s]+$/.test(nama)) {
             alert('Nama hanya boleh berisi huruf dan spasi!');
             return false;
@@ -91,26 +91,26 @@
             return false;
         }
         
-        // Validate email
+        // Validasi email
         const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
         if (!emailPattern.test(email.toLowerCase())) {
             alert('Format email tidak valid!');
             return false;
         }
         
-        // Validate phone
+        // Validasi nomor telepon
         if (!/^[0-9]{10,15}$/.test(noTelp)) {
             alert('Nomor telepon harus 10-15 digit angka!');
             return false;
         }
         
-        // Validate password
+        // Validasi password
         if (password.length < 6) {
             alert('Password minimal 6 karakter!');
             return false;
         }
         
-        // Check password match
+        // Cek kecocokan password
         if (password !== confirmPassword) {
             alert('Password dan Konfirmasi Password tidak sama!');
             return false;
@@ -119,7 +119,7 @@
         return true;
     }
     
-    // Real-time password match check
+    // Cek kecocokan password secara real-time
     document.getElementById('confirm_password').addEventListener('keyup', function() {
         const password = document.getElementById('password').value;
         const confirmPassword = this.value;

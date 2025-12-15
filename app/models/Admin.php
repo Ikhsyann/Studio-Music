@@ -7,7 +7,7 @@ class Admin extends Model {
     protected $table = 'admin';
     protected $primaryKey = 'id_admin';
     
-    // Format response dengan optional data
+    // Format response dengan data opsional
     private function response($success, $message, $data = null) {
         return array_merge(['success' => $success, 'message' => $message], $data ? ['data' => $data] : []);
     }
