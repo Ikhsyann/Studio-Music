@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 08, 2025 at 08:24 AM
+-- Generation Time: Dec 15, 2025 at 08:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -74,7 +74,12 @@ INSERT INTO `booking` (`id_booking`, `id_user`, `id_studio`, `tanggal_main`, `ja
 (5, 1, 5, '2025-12-06', '15:00:00', '22:00:00', 7000000.00, 'Disetujui', 2, '2025-11-26 16:56:31', NULL),
 (6, 1, 1, '2025-12-03', '10:00:00', '13:00:00', 450000.00, 'Disetujui', 2, '2025-12-02 20:39:15', NULL),
 (7, 1, 5, '2025-12-07', '10:00:00', '13:00:00', 3000000.00, 'Disetujui', 1, '2025-12-07 05:46:08', NULL),
-(8, 1, 5, '2025-12-18', '10:00:00', '13:00:00', 3000000.00, 'Menunggu Konfirmasi', NULL, '2025-12-08 05:43:24', NULL);
+(8, 1, 5, '2025-12-18', '10:00:00', '13:00:00', 3000000.00, 'Dibatalkan', NULL, '2025-12-08 05:43:24', NULL),
+(9, 1, 5, '2025-12-10', '11:00:00', '14:00:00', 3000000.00, 'Dibatalkan', NULL, '2025-12-10 09:20:24', NULL),
+(10, 3, 5, '2025-12-10', '10:00:00', '12:00:00', 2000000.00, 'Dibatalkan', 1, '2025-12-10 09:27:15', NULL),
+(11, 3, 5, '2025-12-10', '12:00:00', '14:00:00', 2000000.00, 'Disetujui', 1, '2025-12-10 09:28:41', NULL),
+(12, 3, 6, '2025-12-18', '12:00:00', '14:00:00', 200000.00, 'Dibatalkan', NULL, '2025-12-11 06:34:29', NULL),
+(13, 3, 5, '2025-12-11', '10:00:00', '12:00:00', 2000000.00, 'Dibatalkan', NULL, '2025-12-11 06:38:29', NULL);
 
 -- --------------------------------------------------------
 
@@ -104,7 +109,12 @@ INSERT INTO `payments` (`id_payment`, `id_booking`, `jumlah_bayar`, `metode_pemb
 (5, 5, 7000000.00, 'E-Wallet', 'payment_5_1764204991.jpg', '2025-11-26 16:56:31', 'knnjnjn'),
 (6, 6, 450000.00, 'Transfer Bank', 'payment_6_1764736755.jpg', '2025-12-02 20:39:15', ''),
 (7, 7, 3000000.00, 'E-Wallet', 'payment_7_1765115168.png', '2025-12-07 05:46:08', ''),
-(8, 8, 3000000.00, 'Transfer Bank', 'payment_8_1765172604.png', '2025-12-08 05:43:24', 'ass');
+(8, 8, 3000000.00, 'Transfer Bank', 'payment_8_1765172604.png', '2025-12-08 05:43:24', 'ass'),
+(9, 9, 3000000.00, 'E-Wallet', 'payment_9_1765358424.png', '2025-12-10 09:20:24', 'a'),
+(10, 10, 2000000.00, 'Transfer Bank', 'payment_10_1765358835.png', '2025-12-10 09:27:15', ''),
+(11, 11, 2000000.00, 'E-Wallet', 'payment_11_1765358921.png', '2025-12-10 09:28:41', ''),
+(12, 12, 200000.00, 'Transfer Bank', 'payment_12_1765434869.jpg', '2025-12-11 06:34:29', ''),
+(13, 13, 2000000.00, 'Transfer Bank', 'payment_13_1765435109.jpg', '2025-12-11 06:38:29', '');
 
 -- --------------------------------------------------------
 
@@ -235,7 +245,7 @@ ALTER TABLE `booking`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id_payment` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_payment` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `studios`
