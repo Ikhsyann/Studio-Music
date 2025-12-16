@@ -16,42 +16,42 @@ class Model {
         return new QueryBuilder($this->db);
     }
     
-    // Ambil semua record dari tabel
+    // Ambil semua record dari tabel - MENGGUNAKAN QUERY BUILDER
     public function all() {
-        return $this->db->query("SELECT * FROM {$this->table}")->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->get();
     }
     
-    // Cari single record berdasarkan ID
+    // Cari single record berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function find($id) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = ? LIMIT 1");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->where($this->primaryKey, $id)
+                    ->first();
     }
     
-    // Insert record baru
+    // Insert record baru - MENGGUNAKAN QUERY BUILDER
     public function insert($data) {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = ':' . implode(', :', array_keys($data));
-        $stmt = $this->db->prepare("INSERT INTO {$this->table} ($columns) VALUES ($placeholders)");
-        
-        foreach ($data as $key => $value) $stmt->bindValue(":$key", $value);
-        return $stmt->execute();
+        return $this->query()
+                    ->table($this->table)
+                    ->insert($data) > 0;
     }
     
-    // Update record yang ada
+    // Update record yang ada - MENGGUNAKAN QUERY BUILDER
     public function update($id, $data) {
-        $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($data)));
-        $stmt = $this->db->prepare("UPDATE {$this->table} SET $set WHERE {$this->primaryKey} = :id");
-        
-        foreach ($data as $key => $value) $stmt->bindValue(":$key", $value);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        return $this->query()
+                    ->table($this->table)
+                    ->where($this->primaryKey, $id)
+                    ->update($data) > 0;
     }
     
-    // Hapus record berdasarkan ID
+    // Hapus record berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE {$this->primaryKey} = ?");
-        return $stmt->execute([$id]);
+        return $this->query()
+                    ->table($this->table)
+                    ->where($this->primaryKey, $id)
+                    ->delete() > 0;
     }
     
     // Validasi input data sesuai rules

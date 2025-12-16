@@ -12,11 +12,12 @@ class Admin extends Model {
         return array_merge(['success' => $success, 'message' => $message], $data ? ['data' => $data] : []);
     }
     
-    // Login admin dengan email dan password
+    // Login admin dengan email dan password - MENGGUNAKAN QUERY BUILDER
     public function login($email, $password) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
-        $stmt->execute([$email]);
-        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+        $admin = $this->query()
+                      ->table($this->table)
+                      ->where('email', $email)
+                      ->first();
         
         if ($admin && password_verify($password, $admin['password'])) {
             unset($admin['password']);
@@ -26,49 +27,56 @@ class Admin extends Model {
         return $this->response(false, 'Email atau password salah');
     }
     
-    // Cari admin berdasarkan email
+    // Cari admin berdasarkan email - MENGGUNAKAN QUERY BUILDER
     public function findByEmail($email) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
-        $stmt->execute([$email]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->where('email', $email)
+                    ->first();
     }
     
-    // Ambil semua data user
+    // Ambil semua data user - MENGGUNAKAN QUERY BUILDER
     public function getAllUsers() {
-        $stmt = $this->db->prepare("SELECT id_user, nama, email, no_telp, created_at FROM users ORDER BY created_at DESC");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table('users')
+                    ->select(['id_user', 'nama', 'email', 'no_telp', 'created_at'])
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
     }
     
-    // Ambil semua booking dengan detail lengkap
+    // Ambil semua booking dengan detail lengkap - MENGGUNAKAN QUERY BUILDER
     public function getAllBookings() {
-        $stmt = $this->db->prepare(
-            "SELECT b.*, s.nama_studio, u.nama as nama_user, u.email as email_user, 
-                    p.bukti_pembayaran, a.email as admin_email
-             FROM booking b
-             JOIN studios s ON b.id_studio = s.id_studio
-             JOIN users u ON b.id_user = u.id_user
-             LEFT JOIN payments p ON b.id_booking = p.id_booking
-             LEFT JOIN admin a ON b.id_admin = a.id_admin
-             ORDER BY b.created_at DESC"
-        );
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table('booking b')
+                    ->select('b.*, s.nama_studio, u.nama as nama_user, u.email as email_user, p.bukti_pembayaran, a.email as admin_email')
+                    ->join('studios s', 'b.id_studio', '=', 's.id_studio')
+                    ->join('users u', 'b.id_user', '=', 'u.id_user')
+                    ->leftJoin('payments p', 'b.id_booking', '=', 'p.id_booking')
+                    ->leftJoin('admin a', 'b.id_admin', '=', 'a.id_admin')
+                    ->orderBy('b.created_at', 'DESC')
+                    ->get();
     }
     
-    // Hapus user berdasarkan ID
+    // Hapus user berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function deleteUser($id_user) {
-        $stmt = $this->db->prepare("DELETE FROM users WHERE id_user = ?");
-        return $stmt->execute([$id_user]);
+        return $this->query()
+                    ->table('users')
+                    ->where('id_user', $id_user)
+                    ->delete() > 0;
     }
     
-    // Buat admin baru
+    // Buat admin baru - MENGGUNAKAN QUERY BUILDER
     public function createAdmin($email, $password) {
         if ($this->findByEmail($email)) return $this->response(false, 'Email sudah digunakan');
         
-        $stmt = $this->db->prepare("INSERT INTO {$this->table} (email, password) VALUES (?, ?)");
+        $insertId = $this->query()
+                         ->table($this->table)
+                         ->insert([
+                             'email' => $email,
+                             'password' => password_hash($password, PASSWORD_BCRYPT, ['cost' => 12])
+                         ]);
         
-        return $stmt->execute([$email, password_hash($password, PASSWORD_BCRYPT, ['cost' => 12])])
+        return $insertId > 0
             ? $this->response(true, 'Admin berhasil dibuat')
             : $this->response(false, 'Gagal membuat admin');
     }
