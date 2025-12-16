@@ -26,6 +26,9 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `admin`
 --
+DROP DATABASE IF EXISTS `studio_music`;
+CREATE DATABASE `studio_music`;
+USE `studio_music`;
 
 CREATE TABLE `admin` (
   `id_admin` int(11) NOT NULL,
