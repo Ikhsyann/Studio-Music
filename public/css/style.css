@@ -1,5 +1,5 @@
 /* ====================== 
-   MAIN STYLE CSS
+   CSS GAYA UTAMA
    ====================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap');
@@ -18,7 +18,7 @@ body {
 }
 
 /* ====================== 
-   NAVBAR
+   NAVIGASI BAR
    ====================== */
 
 .navbar {
@@ -70,7 +70,7 @@ body {
 }
 
 /* ====================== 
-   MAIN CONTENT
+   KONTEN UTAMA
    ====================== */
 
 .main-content {
@@ -110,7 +110,7 @@ body {
 }
 
 /* ====================== 
-   STUDIO GRID (Dashboard Cards)
+   GRID STUDIO (Kartu Dashboard)
    ====================== */
 
 .studio-grid {
@@ -214,7 +214,7 @@ body {
 }
 
 /* ====================== 
-   BOOKING FORM
+   FORMULIR BOOKING
    ====================== */
 
 .booking-container,
@@ -357,7 +357,7 @@ body {
 }
 
 /* ====================== 
-   PAYMENT & BOOKING CARDS (DARK THEME)
+   KARTU PEMBAYARAN & BOOKING (TEMA GELAP)
    ====================== */
 
 /* Layout utama konten pembayaran */
@@ -555,7 +555,7 @@ body {
 }
 
 /* ====================== 
-   PAYMENT SECTION
+   BAGIAN PEMBAYARAN
    ====================== */
 
 .booking-summary h3 {
@@ -600,7 +600,7 @@ body {
 /* Versi lama payment-method-info & bank-account digantikan oleh versi dark di atas */
 
 /* ====================== 
-   RIWAYAT BOOKING
+   RIWAYAT PEMESANAN
    ====================== */
 
 .booking-list {
@@ -664,7 +664,7 @@ body {
 }
 
 /* ====================== 
-   STATUS BADGES
+   LENCANA STATUS
    ====================== */
 
 .status-badge {
@@ -735,7 +735,7 @@ body {
 }
 
 /* ====================== 
-   STATUS BOOKING TABLE
+   TABEL STATUS BOOKING
    ====================== */
 
 .table-responsive {
@@ -796,7 +796,7 @@ body {
 }
 
 /* ====================== 
-   NO DATA
+   TIDAK ADA DATA
    ====================== */
 
 .no-data {
@@ -811,7 +811,7 @@ body {
 }
 
 /* ====================== 
-   ALERTS
+   PERINGATAN
    ====================== */
 
 .alert {
@@ -835,7 +835,7 @@ body {
 }
 
 /* ====================== 
-   FOOTER
+   BAGIAN BAWAH
    ====================== */
 
 .footer {
@@ -860,7 +860,7 @@ body {
 }
 
 /* ====================== 
-   RESPONSIVE
+   DESAIN RESPONSIF
    ====================== */
 
 @media (max-width: 768px) {
