@@ -14,14 +14,18 @@ class Studio extends Model {
         );
     }
     
-    // Ambil studio yang tersedia
+    // Ambil studio yang tersedia - MENGGUNAKAN QUERY BUILDER
     public function getAvailable() {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE status_ketersediaan = 'Tersedia' ORDER BY nama_studio");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->where('status_ketersediaan', 'Tersedia')
+                    ->orderBy('nama_studio', 'ASC')
+                    ->get();
     }
     
     // Cari studio berdasarkan keyword
+    // Note: Query Builder belum support multiple OR LIKE conditions,
+    // jadi masih menggunakan raw SQL untuk kondisi pencarian yang kompleks
     public function search($keyword) {
         $stmt = $this->db->prepare(
             "SELECT * FROM {$this->table} 
@@ -50,7 +54,7 @@ class Studio extends Model {
             : $this->response(false, 'Gagal menambahkan studio');
     }
     
-    // Update data studio
+    // Update data studio - MENGGUNAKAN QUERY BUILDER
     public function updateStudio($id_studio, $data) {
         $errors = $this->validate($data, [
             'nama_studio' => 'required',
@@ -60,31 +64,38 @@ class Studio extends Model {
         
         if ($errors) return $this->response(false, $errors);
         
-        $stmt = $this->db->prepare(
-            "UPDATE {$this->table} 
-             SET nama_studio = ?, deskripsi = ?, harga_per_jam = ?, fasilitas = ?, 
-                 kapasitas = ?, gambar = ?, status_ketersediaan = ?
-             WHERE id_studio = ?"
-        );
+        $affected = $this->query()
+                         ->table($this->table)
+                         ->where('id_studio', $id_studio)
+                         ->update([
+                             'nama_studio' => $data['nama_studio'],
+                             'deskripsi' => $data['deskripsi'],
+                             'harga_per_jam' => $data['harga_per_jam'],
+                             'fasilitas' => $data['fasilitas'],
+                             'kapasitas' => $data['kapasitas'],
+                             'gambar' => $data['gambar'],
+                             'status_ketersediaan' => $data['status_ketersediaan']
+                         ]);
         
-        return $stmt->execute([
-            $data['nama_studio'], $data['deskripsi'], $data['harga_per_jam'], $data['fasilitas'],
-            $data['kapasitas'], $data['gambar'], $data['status_ketersediaan'], $id_studio
-        ]) ? $this->response(true, 'Studio berhasil diupdate') 
-           : $this->response(false, 'Gagal mengupdate studio');
+        return $affected > 0
+            ? $this->response(true, 'Studio berhasil diupdate') 
+            : $this->response(false, 'Gagal mengupdate studio');
     }
     
-    // Hapus studio berdasarkan ID
+    // Hapus studio berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function deleteStudio($id_studio) {
-        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id_studio = ?");
-        return $stmt->execute([$id_studio]);
+        return $this->query()
+                    ->table($this->table)
+                    ->where('id_studio', $id_studio)
+                    ->delete() > 0;
     }
     
-    // Cari studio berdasarkan ID
+    // Cari studio berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function findById($id_studio) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id_studio = ? LIMIT 1");
-        $stmt->execute([$id_studio]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->where('id_studio', $id_studio)
+                    ->first();
     }
 }
 ?>

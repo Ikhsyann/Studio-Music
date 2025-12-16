@@ -34,11 +34,13 @@ class User extends Model {
             : $this->response(false, 'Registrasi gagal');
     }
     
-    // Login user dengan email dan password
+    // Login user dengan email dan password - MENGGUNAKAN QUERY BUILDER
     public function login($email, $password) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Menggunakan Query Builder dengan method chaining
+        $user = $this->query()
+                     ->table($this->table)
+                     ->where('email', '=', $email)
+                     ->first();
         
         if ($user && password_verify($password, $user['password'])) {
             unset($user['password']);
@@ -48,14 +50,15 @@ class User extends Model {
         return $this->response(false, 'Email atau password salah');
     }
     
-    // Cari user berdasarkan email
+    // Cari user berdasarkan email - MENGGUNAKAN QUERY BUILDER
     public function findByEmail($email) {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
-        $stmt->execute([$email]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->where('email', $email)
+                    ->first();
     }
     
-    // Update profil user
+    // Update profil user - MENGGUNAKAN QUERY BUILDER
     public function updateProfile($id_user, $data) {
         $errors = $this->validate($data, [
             'nama' => 'required',
@@ -64,9 +67,16 @@ class User extends Model {
         
         if ($errors) return $this->response(false, $errors);
         
-        $stmt = $this->db->prepare("UPDATE {$this->table} SET nama = ?, no_telp = ? WHERE id_user = ?");
+        // Menggunakan Query Builder untuk UPDATE
+        $affected = $this->query()
+                         ->table($this->table)
+                         ->where('id_user', $id_user)
+                         ->update([
+                             'nama' => $data['nama'],
+                             'no_telp' => $data['no_telp']
+                         ]);
         
-        return $stmt->execute([$data['nama'], $data['no_telp'], $id_user])
+        return $affected > 0
             ? $this->response(true, 'Profile berhasil diupdate')
             : $this->response(false, 'Gagal mengupdate profile');
     }

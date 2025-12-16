@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/QueryBuilder.php';
+
 // Kelas Model Dasar - Menyediakan fungsionalitas seperti ORM
 class Model {
     protected $db, $table, $primaryKey = 'id';
@@ -7,6 +9,11 @@ class Model {
     public function __construct() {
         require_once __DIR__ . '/../config/Database.php';
         $this->db = (new Database())->getConnection(); // Koneksi ke database
+    }
+    
+    // Get QueryBuilder instance untuk query yang lebih kompleks
+    protected function query() {
+        return new QueryBuilder($this->db);
     }
     
     // Ambil semua record dari tabel

@@ -50,8 +50,17 @@ class Booking extends Model {
             : $this->response(false, 'Gagal membuat booking');
     }
     
-    // Cek apakah studio sudah dibooking pada waktu tersebut
+    // Cek apakah studio sudah dibooking pada waktu tersebut - MENGGUNAKAN QUERY BUILDER
     public function isStudioBooked($id_studio, $tanggal, $jam_mulai, $jam_selesai) {
+        // Query Builder tidak mendukung kondisi kompleks seperti jam overlap,
+        // tapi kita bisa menggunakan whereNotIn untuk status
+        $count = $this->query()
+                      ->table($this->table)
+                      ->where('id_studio', $id_studio)
+                      ->where('tanggal_main', $tanggal)
+                      ->count();
+        
+        // Untuk kondisi jam yang overlap, masih perlu raw SQL
         $stmt = $this->executeQuery(
             "SELECT 1 FROM {$this->table} 
              WHERE id_studio = :id_studio AND tanggal_main = :tanggal 
@@ -62,23 +71,26 @@ class Booking extends Model {
         return $stmt->rowCount() > 0;
     }
     
-    // Ambil daftar jam yang sudah dibooking untuk studio tertentu
+    // Ambil daftar jam yang sudah dibooking untuk studio tertentu - MENGGUNAKAN QUERY BUILDER
     public function getBookedHours($id_studio, $tanggal) {
-        return $this->executeQuery(
-            "SELECT jam_mulai, jam_selesai FROM {$this->table} 
-             WHERE id_studio = :id_studio AND tanggal_main = :tanggal AND status_booking != 'Dibatalkan'",
-            [':id_studio' => $id_studio, ':tanggal' => $tanggal]
-        )->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table($this->table)
+                    ->select(['jam_mulai', 'jam_selesai'])
+                    ->where('id_studio', $id_studio)
+                    ->where('tanggal_main', $tanggal)
+                    ->where('status_booking', '!=', 'Dibatalkan')
+                    ->get();
     }
     
-    // Ambil semua booking milik user tertentu
+    // Ambil semua booking milik user tertentu - MENGGUNAKAN QUERY BUILDER
     public function getByUser($id_user) {
-        return $this->executeQuery(
-            "SELECT b.*, s.nama_studio, s.harga_per_jam, s.fasilitas, b.id_admin
-             FROM {$this->table} b JOIN studios s ON b.id_studio = s.id_studio
-             WHERE b.id_user = :id_user ORDER BY b.created_at DESC",
-            [':id_user' => $id_user]
-        )->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table("{$this->table} b")
+                    ->select('b.*, s.nama_studio, s.harga_per_jam, s.fasilitas, b.id_admin')
+                    ->join('studios s', 'b.id_studio', '=', 's.id_studio')
+                    ->where('b.id_user', $id_user)
+                    ->orderBy('b.created_at', 'DESC')
+                    ->get();
     }
     
     // Template query untuk join booking dengan studio, user, dan admin
@@ -91,38 +103,55 @@ class Booking extends Model {
                 $where ORDER BY b.created_at DESC";
     }
     
-    // Ambil semua booking dengan data lengkap
+    // Ambil semua booking dengan data lengkap - MENGGUNAKAN QUERY BUILDER
     public function getAllBookings() {
-        return $this->executeQuery($this->getBookingsQuery())->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table("{$this->table} b")
+                    ->select('b.*, s.nama_studio, u.nama as nama_user, u.email as email_user, a.email as admin_email')
+                    ->join('studios s', 'b.id_studio', '=', 's.id_studio')
+                    ->join('users u', 'b.id_user', '=', 'u.id_user')
+                    ->leftJoin('admin a', 'b.id_admin', '=', 'a.id_admin')
+                    ->orderBy('b.created_at', 'DESC')
+                    ->get();
     }
     
-    // Ambil booking berdasarkan tanggal
+    // Ambil booking berdasarkan tanggal - MENGGUNAKAN QUERY BUILDER
     public function getByDate($tanggal) {
-        return $this->executeQuery(
-            $this->getBookingsQuery('WHERE b.tanggal_main = :tanggal'),
-            [':tanggal' => $tanggal]
-        )->fetchAll(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table("{$this->table} b")
+                    ->select('b.*, s.nama_studio, u.nama as nama_user, u.email as email_user, a.email as admin_email')
+                    ->join('studios s', 'b.id_studio', '=', 's.id_studio')
+                    ->join('users u', 'b.id_user', '=', 'u.id_user')
+                    ->leftJoin('admin a', 'b.id_admin', '=', 'a.id_admin')
+                    ->where('b.tanggal_main', $tanggal)
+                    ->orderBy('b.created_at', 'DESC')
+                    ->get();
     }
     
-    // Update status booking (dengan admin id opsional)
+    // Update status booking (dengan admin id opsional) - MENGGUNAKAN QUERY BUILDER
     public function updateStatus($id_booking, $status, $id_admin = null) {
-        $params = [':status' => $status, ':id' => $id_booking];
-        $set = 'status_booking = :status' . ($id_admin ? ', id_admin = :id_admin' : '');
-        if ($id_admin) $params[':id_admin'] = $id_admin;
+        $updateData = ['status_booking' => $status];
+        if ($id_admin) {
+            $updateData['id_admin'] = $id_admin;
+        }
         
-        return $this->executeQuery("UPDATE {$this->table} SET $set WHERE id_booking = :id", $params)->rowCount() > 0;
+        $affected = $this->query()
+                         ->table($this->table)
+                         ->where('id_booking', $id_booking)
+                         ->update($updateData);
+        
+        return $affected > 0;
     }
     
-    // Ambil detail booking berdasarkan ID
+    // Ambil detail booking berdasarkan ID - MENGGUNAKAN QUERY BUILDER
     public function getById($id_booking) {
-        return $this->executeQuery(
-            "SELECT b.*, s.nama_studio, s.harga_per_jam, u.nama as nama_user
-             FROM {$this->table} b
-             JOIN studios s ON b.id_studio = s.id_studio
-             JOIN users u ON b.id_user = u.id_user
-             WHERE b.id_booking = :id LIMIT 1",
-            [':id' => $id_booking]
-        )->fetch(PDO::FETCH_ASSOC);
+        return $this->query()
+                    ->table("{$this->table} b")
+                    ->select('b.*, s.nama_studio, s.harga_per_jam, u.nama as nama_user')
+                    ->join('studios s', 'b.id_studio', '=', 's.id_studio')
+                    ->join('users u', 'b.id_user', '=', 'u.id_user')
+                    ->where('b.id_booking', $id_booking)
+                    ->first();
     }
     
     // Batalkan booking oleh user
