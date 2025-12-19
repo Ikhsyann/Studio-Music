@@ -1,9 +1,13 @@
 <?php include __DIR__ . '/header.php'; ?>
+<?php 
+$isEdit = $isEdit ?? false;
+$user = $user ?? null;
+?>
 
 <div class="admin-dashboard-container">
     <div class="page-header">
-        <h1>Tambah User Baru</h1>
-        <p>Lengkapi form di bawah ini</p>
+        <h1><?= $isEdit ? 'Edit User' : 'Tambah User Baru' ?></h1>
+        <p><?= $isEdit ? 'Update informasi user' : 'Lengkapi form di bawah ini' ?></p>
     </div>
     
     <?php if (isset($_SESSION['flash'])): ?>
@@ -17,13 +21,17 @@
     
     <div class="admin-section">
         <form method="POST" action="/Studio-Music/public/index.php?url=admin/saveUser" class="studio-form" id="userForm" onsubmit="return validateUserForm()">
+            <?php if ($isEdit && $user): ?>
+                <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
+            <?php endif; ?>
+            
             <div class="form-group">
                 <label for="nama">Nama Lengkap <span style="color: red;">*</span></label>
                 <input type="text" id="nama" name="nama" class="form-control" required 
                        minlength="3" maxlength="100"
                        pattern="[A-Za-z\s]+"
                        title="Nama hanya boleh berisi huruf dan spasi"
-                       value="<?= htmlspecialchars(old('nama', '')) ?>">
+                       value="<?= htmlspecialchars($isEdit && $user ? $user['nama'] : old('nama', '')) ?>">
                 <small>Minimal 3 karakter, hanya huruf dan spasi</small>
             </div>
             
@@ -32,23 +40,23 @@
                 <input type="email" id="email" name="email" class="form-control" required 
                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                        title="Masukkan email yang valid"
-                       value="<?= htmlspecialchars(old('email', '')) ?>">
+                       value="<?= htmlspecialchars($isEdit && $user ? $user['email'] : old('email', '')) ?>">
                 <small>Format: user@example.com</small>
             </div>
             
             <div class="form-group">
-                <label for="password">Password <span style="color: red;">*</span></label>
-                <input type="password" id="password" name="password" class="form-control" required 
+                <label for="password">Password <?= $isEdit ? '' : '<span style="color: red;">*</span>' ?></label>
+                <input type="password" id="password" name="password" class="form-control" <?= $isEdit ? '' : 'required' ?>
                        minlength="6" maxlength="50"
                        title="Password minimal 6 karakter">
-                <small>Minimal 6 karakter</small>
+                <small><?= $isEdit ? 'Kosongkan jika tidak ingin mengubah password' : 'Minimal 6 karakter' ?></small>
             </div>
             
             <div class="form-group">
-                <label for="confirm_password">Konfirmasi Password <span style="color: red;">*</span></label>
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required 
+                <label for="confirm_password">Konfirmasi Password <?= $isEdit ? '' : '<span style="color: red;">*</span>' ?></label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" <?= $isEdit ? '' : 'required' ?>
                        minlength="6" maxlength="50">
-                <small id="password-match">Ulangi password yang sama</small>
+                <small id="password-match"><?= $isEdit ? 'Ulangi password baru jika ingin mengubah' : 'Ulangi password yang sama' ?></small>
             </div>
             
             <div class="form-group">
@@ -57,13 +65,13 @@
                        pattern="[0-9]{10,15}" 
                        minlength="10" maxlength="15"
                        title="Nomor telepon harus 10-15 digit angka"
-                       value="<?= htmlspecialchars(old('no_telp', '')) ?>">
+                       value="<?= htmlspecialchars($isEdit && $user ? $user['no_telp'] : old('no_telp', '')) ?>">
                 <small>10-15 digit angka (contoh: 081234567890)</small>
             </div>
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    Tambah User
+                    <?= $isEdit ? 'Update User' : 'Tambah User' ?>
                 </button>
                 <a href="/Studio-Music/public/index.php?url=admin/users" class="btn btn-secondary">
                     Batal
@@ -73,6 +81,8 @@
     </div>
     
     <script>
+    const isEditMode = <?= $isEdit ? 'true' : 'false' ?>;
+    
     function validateUserForm() {
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirm_password').value;
@@ -105,15 +115,28 @@
         }
         
         // Validasi password
-        if (password.length < 6) {
-            alert('Password minimal 6 karakter!');
-            return false;
-        }
-        
-        // Cek kecocokan password
-        if (password !== confirmPassword) {
-            alert('Password dan Konfirmasi Password tidak sama!');
-            return false;
+        if (!isEditMode) {
+            // Create mode - password wajib
+            if (password.length < 6) {
+                alert('Password minimal 6 karakter!');
+                return false;
+            }
+            if (password !== confirmPassword) {
+                alert('Password dan Konfirmasi Password tidak sama!');
+                return false;
+            }
+        } else {
+            // Edit mode - password optional
+            if (password.length > 0) {
+                if (password.length < 6) {
+                    alert('Password minimal 6 karakter!');
+                    return false;
+                }
+                if (password !== confirmPassword) {
+                    alert('Password dan Konfirmasi Password tidak sama!');
+                    return false;
+                }
+            }
         }
         
         return true;

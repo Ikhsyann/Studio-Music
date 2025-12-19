@@ -80,5 +80,49 @@ class User extends Model {
             ? $this->response(true, 'Profile berhasil diupdate')
             : $this->response(false, 'Gagal mengupdate profile');
     }
+    
+    // Update user oleh admin (bisa update email dan password)
+    public function updateUser($id_user, $data) {
+        $errors = $this->validate($data, [
+            'nama' => 'required',
+            'email' => 'required|email',
+            'no_telp' => 'required|numeric'
+        ]);
+        
+        if ($errors) return $this->response(false, $errors);
+        
+        // Ambil data user saat ini
+        $currentUser = $this->find($id_user);
+        if (!$currentUser) {
+            return $this->response(false, 'User tidak ditemukan');
+        }
+        
+        // Cek apakah email berubah
+        if ($data['email'] !== $currentUser['email']) {
+            // Email berubah, cek apakah sudah digunakan user lain
+            $existingUser = $this->findByEmail($data['email']);
+            if ($existingUser) {
+                return $this->response(false, 'Email sudah digunakan user lain');
+            }
+        }
+        
+        $updateData = [
+            'nama' => $data['nama'],
+            'email' => $data['email'],
+            'no_telp' => $data['no_telp']
+        ];
+        
+        // Update password hanya jika diisi
+        if (!empty($data['password'])) {
+            $updateData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+        
+        $affected = $this->query()
+                         ->table($this->table)
+                         ->where('id_user', $id_user)
+                         ->update($updateData);
+        
+        return $this->response(true, 'User berhasil diupdate');
+    }
 }
 ?>

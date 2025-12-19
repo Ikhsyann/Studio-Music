@@ -1267,6 +1267,27 @@ p {
     color: rgba(255, 255, 255, 0.7);
 }
 
+/* Button Edit - Untuk tombol edit di admin */
+.btn-edit {
+    background: linear-gradient(135deg, #667eea 0%, #416effff 100%);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
 /* ====================== 
    RESPONSIVE - Media queries untuk mobile dan tablet
    ====================== */

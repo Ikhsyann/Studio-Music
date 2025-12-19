@@ -71,13 +71,18 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <?php if (!empty($booking['admin_email'])): ?>
-                                        <span style="font-size: 12px; color: #c5c5c5ff;">
-                                            <?= htmlspecialchars($booking['admin_email']) ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-muted">-</span>
-                                    <?php endif; ?>
+                                    <?php 
+                                    if ($booking['status_booking'] == 'Menunggu Konfirmasi') {
+                                        echo '<span class="text-muted">-</span>';
+                                    } elseif (!empty($booking['id_admin'])) {
+                                        echo '<span class="badge-admin">Admin</span>';
+                                        if (!empty($booking['admin_email'])) {
+                                            echo '<br><span style="font-size: 11px; color: #888;">(' . htmlspecialchars($booking['admin_email']) . ')</span>';
+                                        }
+                                    } else {
+                                        echo '<span class="badge-user">User</span>';
+                                    }
+                                    ?>
                                 </td>
                                 <td>
                                     <?php if (!empty($booking['bukti_pembayaran'])): ?>

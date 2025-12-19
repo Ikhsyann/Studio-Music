@@ -46,6 +46,9 @@
                                     <td><?= htmlspecialchars($user['email']) ?></td>
                                     <td><?= htmlspecialchars($user['no_telp']) ?></td>
                                     <td>
+                                        <a href="/Studio-Music/public/index.php?url=admin/editUser/<?= $user['id_user'] ?>" class="btn-edit" style="margin-bottom: 5px;">
+                                            Edit
+                                        </a>
                                         <form method="POST" action="/Studio-Music/public/index.php?url=admin/deleteUser" style="display: inline;">
                                             <input type="hidden" name="id_user" value="<?= $user['id_user'] ?>">
                                             <button type="submit" class="btn-delete" onclick="return confirm('Yakin hapus user ini?')">
@@ -120,13 +123,5 @@
         </div>
     </div>
 </div>
-
-<style>
-@media (max-width: 1024px) {
-    .admin-dashboard-container > div[style*="grid"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-</style>
 
 <?php include __DIR__ . '/footer.php'; ?>

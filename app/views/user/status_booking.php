@@ -2,8 +2,8 @@
 
 <div class="status-booking-container">
     <div class="page-header">
-        <h1>Status Booking - Jadwal Studio</h1>
-        <p>Lihat semua jadwal booking studio yang tersedia</p>
+        <h1>Booked Studio List</h1>
+        <p>Lihat semua jadwal booking studio yang sudah di proses!</p>
     </div>
     
     <!-- Filter by Date -->

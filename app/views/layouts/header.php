@@ -16,7 +16,7 @@
             <ul class="navbar-menu">
                 <li><a href="/Studio-Music/public/index.php?url=user/dashboard" class="nav-link">Dashboard</a></li>
                 <li><a href="/Studio-Music/public/index.php?url=user/riwayat" class="nav-link">Riwayat Booking</a></li>
-                <li><a href="/Studio-Music/public/index.php?url=user/statusBooking" class="nav-link">Status Booking</a></li>
+                <li><a href="/Studio-Music/public/index.php?url=user/statusBooking" class="nav-link">Booked Studio</a></li>
                 <li><a href="/Studio-Music/public/index.php?url=auth/logout" class="nav-link logout">Logout</a></li>
             </ul>
         </div>

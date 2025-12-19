@@ -309,7 +309,33 @@ class AdminController extends Controller {
     // Tampilkan form tambah user
     public function addUser() {
         $this->checkAdmin();
-        $this->view('admin/user_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah User']);
+        $this->view('admin/user_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah User', 'isEdit' => false]);
+    }
+    
+    // Tampilkan form edit user
+    public function editUser($id_user = null) {
+        $this->checkAdmin();
+        
+        if (!$id_user) {
+            $this->setFlash('error', 'ID User tidak ditemukan');
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+            return;
+        }
+        
+        $user = $this->model('User')->find($id_user);
+        
+        if (!$user) {
+            $this->setFlash('error', 'User tidak ditemukan');
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
+            return;
+        }
+        
+        $this->view('admin/user_form', [
+            'admin' => $_SESSION['admin'], 
+            'title' => 'Edit User',
+            'user' => $user,
+            'isEdit' => true
+        ]);
     }
     
     // Tampilkan form tambah admin
@@ -318,32 +344,62 @@ class AdminController extends Controller {
         $this->view('admin/admin_form', ['admin' => $_SESSION['admin'], 'title' => 'Tambah Admin']);
     }
     
-    // Simpan user baru
+    // Simpan user baru atau update user
     public function saveUser() {
         $this->checkAdmin();
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') $this->redirect('/Studio-Music/public/index.php?url=admin/users');
-        
-        $nama = trim($_POST['nama'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $no_telp = trim($_POST['no_telp'] ?? '');
-        $password = $_POST['password'] ?? '';
-        
-        $errors = array_merge(
-            (empty($nama) || strlen($nama) < 3) ? ['Nama minimal 3 karakter'] : [],
-            !preg_match('/^[A-Za-z\s]+$/', $nama) ? ['Nama hanya boleh berisi huruf dan spasi'] : [],
-            !filter_var($email, FILTER_VALIDATE_EMAIL) ? ['Format email tidak valid'] : [],
-            !preg_match('/^[0-9]{10,15}$/', $no_telp) ? ['Nomor telepon harus 10-15 digit angka'] : [],
-            strlen($password) < 6 ? ['Password minimal 6 karakter'] : []
-        );
-        
-        if ($errors) {
-            $this->setFlash('error', implode(', ', $errors));
-            $this->redirect('/Studio-Music/public/index.php?url=admin/addUser');
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            $this->redirect('/Studio-Music/public/index.php?url=admin/users');
             return;
         }
         
-        $result = $this->model('User')->register(['nama' => $nama, 'email' => $email, 'password' => $password, 'no_telp' => $no_telp]);
-        $this->setFlash($result['success'] ? 'success' : 'error', $result['success'] ? 'User berhasil ditambahkan' : ($result['message'] ?? 'Gagal menambahkan user'));
+        $id_user = $_POST['id_user'] ?? null;
+        $nama = trim($_POST['nama'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $no_telp = trim($_POST['no_telp'] ?? '');
+        
+        $errors = [];
+        
+        if (strlen($nama) < 3) $errors[] = 'Nama minimal 3 karakter';
+        if (!preg_match('/^[A-Za-z\s]+$/', $nama)) $errors[] = 'Nama hanya boleh berisi huruf dan spasi';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Format email tidak valid';
+        if (!preg_match('/^[0-9]{10,15}$/', $no_telp)) $errors[] = 'Nomor telepon harus 10-15 digit angka';
+        
+        // Validasi password hanya untuk user baru atau jika password diisi saat edit
+        if (!$id_user) {
+            // Create mode - password wajib
+            if (strlen($password) < 6) $errors[] = 'Password minimal 6 karakter';
+            if ($password !== $confirm_password) $errors[] = 'Password dan Konfirmasi Password tidak sama';
+        } else {
+            // Edit mode - password optional
+            if (!empty($password)) {
+                if (strlen($password) < 6) $errors[] = 'Password minimal 6 karakter';
+                if ($password !== $confirm_password) $errors[] = 'Password dan Konfirmasi Password tidak sama';
+            }
+        }
+        
+        if ($errors) {
+            $this->setFlash('error', implode(', ', $errors));
+            $this->redirect($id_user ? '/Studio-Music/public/index.php?url=admin/editUser/' . $id_user : '/Studio-Music/public/index.php?url=admin/addUser');
+            return;
+        }
+        
+        if ($id_user) {
+            // Update existing user
+            $result = $this->model('User')->updateUser($id_user, [
+                'nama' => $nama,
+                'email' => $email,
+                'password' => $password,
+                'no_telp' => $no_telp
+            ]);
+            $this->setFlash($result['success'] ? 'success' : 'error', $result['message']);
+        } else {
+            // Create new user
+            $result = $this->model('User')->register(['nama' => $nama, 'email' => $email, 'password' => $password, 'no_telp' => $no_telp]);
+            $this->setFlash($result['success'] ? 'success' : 'error', $result['success'] ? 'User berhasil ditambahkan' : ($result['message'] ?? 'Gagal menambahkan user'));
+        }
+        
         $this->redirect('/Studio-Music/public/index.php?url=admin/users');
     }
     
